@@ -1412,28 +1412,30 @@ export default function App() {
   // (without this, the close IPC message has no listener and window stays open)
   if (appState === 'onboarding') {
     return (
-      <ModalProvider>
-        <WindowCloseHandler />
-        <OnboardingWizard
-          state={onboarding.state}
-          onContinue={onboarding.handleContinue}
-          onBack={onboarding.handleBack}
-          onSelectProvider={onboarding.handleSelectProvider}
-          onSelectApiSetupMethod={onboarding.handleSelectApiSetupMethod}
-          onSubmitCredential={onboarding.handleSubmitCredential}
-          onSubmitLocalModel={onboarding.handleSubmitLocalModel}
-          onStartOAuth={onboarding.handleStartOAuth}
-          onFinish={onboarding.handleFinish}
-          isWaitingForCode={onboarding.isWaitingForCode}
-          onSubmitAuthCode={onboarding.handleSubmitAuthCode}
-          onCancelOAuth={onboarding.handleCancelOAuth}
-          copilotDeviceCode={onboarding.copilotDeviceCode}
-          onBrowseGitBash={onboarding.handleBrowseGitBash}
-          onUseGitBashPath={onboarding.handleUseGitBashPath}
-          onRecheckGitBash={onboarding.handleRecheckGitBash}
-          onClearError={onboarding.handleClearError}
-        />
-      </ModalProvider>
+      <LanguageProvider>
+        <ModalProvider>
+          <WindowCloseHandler />
+          <OnboardingWizard
+            state={onboarding.state}
+            onContinue={onboarding.handleContinue}
+            onBack={onboarding.handleBack}
+            onSelectProvider={onboarding.handleSelectProvider}
+            onSelectApiSetupMethod={onboarding.handleSelectApiSetupMethod}
+            onSubmitCredential={onboarding.handleSubmitCredential}
+            onSubmitLocalModel={onboarding.handleSubmitLocalModel}
+            onStartOAuth={onboarding.handleStartOAuth}
+            onFinish={onboarding.handleFinish}
+            isWaitingForCode={onboarding.isWaitingForCode}
+            onSubmitAuthCode={onboarding.handleSubmitAuthCode}
+            onCancelOAuth={onboarding.handleCancelOAuth}
+            copilotDeviceCode={onboarding.copilotDeviceCode}
+            onBrowseGitBash={onboarding.handleBrowseGitBash}
+            onUseGitBashPath={onboarding.handleUseGitBashPath}
+            onRecheckGitBash={onboarding.handleRecheckGitBash}
+            onClearError={onboarding.handleClearError}
+          />
+        </ModalProvider>
+      </LanguageProvider>
     )
   }
 

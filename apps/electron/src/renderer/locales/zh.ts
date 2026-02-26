@@ -97,7 +97,7 @@ export const zh: Translations = {
             richToolDesc: '详细的工具使用记录',
             richToolDescDesc: '在所有工具调用中添加操作名称和意图描述，为会话提供更丰富的上下文。',
             toolIcons: '工具图标',
-            toolIconsDesc: '在聊天详情中CLI命令旁显示的图标。存放在 ~/.craft-agent/tool-icons/ 中。',
+            toolIconsDesc: '在聊天详情中CLI命令旁显示的图标。存放在 ~/.mengko-agent/tool-icons/ 中。',
             useDefault: '使用默认',
         },
         // 输入设置页面
@@ -200,15 +200,15 @@ export const zh: Translations = {
         preferences: {
             title: '偏好设置',
             basicInfo: '基本信息',
-            basicInfoDesc: '帮助 Craft Agent 为您个性化回复。',
+            basicInfoDesc: '帮助 Mengko 为您个性化回复。',
             nameLabel: '名称',
-            nameDesc: 'Craft Agent 称呼您的方式。',
+            nameDesc: 'Mengko 称呼您的方式。',
             namePlaceholder: '您的名字',
             timezoneLabel: '时区',
             timezoneDesc: '用于"明天"或"下周"等相对日期。',
             timezonePlaceholder: '例如：America/New_York',
             languageLabel: '语言',
-            languageDesc: 'Craft Agent 回复的首选语言。',
+            languageDesc: 'Mengko 回复的首选语言。',
             languagePlaceholder: '例如：中文',
             location: '位置',
             locationDesc: '启用位置感知回复，如天气、当地时间和区域信息。',
@@ -219,8 +219,8 @@ export const zh: Translations = {
             countryDesc: '用于区域格式化和上下文。',
             countryPlaceholder: '例如：中国',
             notes: '备注',
-            notesDesc: '帮助 Craft Agent 了解您偏好的自由文本。',
-            notesPlaceholder: '您希望 Craft Agent 了解的任何其他信息...',
+            notesDesc: '帮助 Mengko 了解您偏好的自由文本。',
+            notesPlaceholder: '您希望 Mengko 了解的任何其他信息...',
             editFile: '编辑文件',
         },
         // 模型供应商设置页面
@@ -332,7 +332,7 @@ export const zh: Translations = {
         waitingForAuth: '等待授权...',
         // 欢迎步骤
         welcome: {
-            title: '欢迎使用 Craft Agents',
+            title: '欢迎使用 Mengko Agents',
             description: '拥有您值得拥有的 UX 体验的 AI 代理。连接一切。整理您的会话。您完成人生工作所需的一切！',
             updateTitle: '更新设置',
             updateDescription: '更新您的 API 连接或更改您的配置。',
@@ -340,7 +340,7 @@ export const zh: Translations = {
         },
         // 提供商选择步骤
         providerSelect: {
-            title: '欢迎使用 Craft Agents',
+            title: '欢迎使用 Mengko Agents',
             description: '您想如何连接？',
             claude: {
                 name: 'Claude Pro / Max',
@@ -378,18 +378,18 @@ export const zh: Translations = {
             },
             chatGptPlus: {
                 name: 'ChatGPT Plus',
-                description: '使用您的 ChatGPT 订阅与 Craft Agents 后端。',
+                description: '使用您的 ChatGPT 订阅与 Mengko 后端。',
             },
             gitHubCopilot: {
                 name: 'GitHub Copilot',
-                description: '使用您的 GitHub Copilot 订阅与 Craft Agents 后端。',
+                description: '使用您的 GitHub Copilot 订阅与 Mengko 后端。',
             },
             piApiKey: {
                 name: 'API 密钥',
                 description: '使用来自 Anthropic、OpenAI、Google 等的 API 密钥。',
             },
             segmentAnthropicDesc: '使用 Claude Agent SDK 作为主代理。\n通过 Claude 订阅或 API 密钥进行配置。',
-            segmentPiDesc: '使用 Craft Agents 后端作为主代理。\n通过 API 密钥、OAuth 订阅或自定义端点进行配置。',
+            segmentPiDesc: '使用 Mengko 后端作为主代理。\n通过 API 密钥、OAuth 订阅或自定义端点进行配置。',
         },
         // 凭证步骤
         credentials: {
@@ -398,14 +398,14 @@ export const zh: Translations = {
             apiConfigDescAnthropic: '输入您的 API 密钥。可选配置 OpenRouter、Ollama 或兼容 API 的自定义端点。',
             connectChatGpt: {
                 title: '连接 ChatGPT',
-                description: '使用您的 ChatGPT 订阅来驱动 Craft Agents。',
+                description: '使用您的 ChatGPT 订阅来驱动 Mengko。',
                 signIn: '使用 ChatGPT 登录',
                 instructions: '点击上方按钮使用您的 OpenAI 账号登录。将打开浏览器窗口进行身份验证。',
                 success: '连接成功！您的 ChatGPT 订阅已就绪。',
             },
             connectCopilot: {
                 title: '连接 GitHub Copilot',
-                description: '使用您的 GitHub Copilot 订阅来驱动 Craft Agents。',
+                description: '使用您的 GitHub Copilot 订阅来驱动 Mengko。',
                 signIn: '使用 GitHub 登录',
                 instructions: '点击上方按钮使用您的 GitHub 账号登录。',
                 deviceCodePrompt: '在 GitHub 上输入此代码进行授权：',

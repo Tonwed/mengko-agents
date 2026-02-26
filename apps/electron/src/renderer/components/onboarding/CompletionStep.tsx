@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@craft-agent/ui"
-import { CraftAgentsSymbol } from "@/components/icons/CraftAgentsSymbol"
+import { MengkoAgentsSymbol } from "@/components/icons/MengkoAgentsSymbol"
 import { StepFormLayout } from "./primitives"
 import { useTranslation } from "@/context/LanguageContext"
 
@@ -33,7 +33,7 @@ export function CompletionStep({
         </div>
       ) : (
         <div className="flex size-16 items-center justify-center">
-          <CraftAgentsSymbol className="size-10 text-accent" />
+          <MengkoAgentsSymbol className="size-10 text-accent" />
         </div>
       )}
       title={isSaving ? t('onboarding.completion.savingTitle') : t('onboarding.completion.doneTitle')}

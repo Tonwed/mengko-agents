@@ -1,4 +1,4 @@
-import { CraftAgentsSymbol } from "@/components/icons/CraftAgentsSymbol"
+import { MengkoAgentsSymbol } from "@/components/icons/MengkoAgentsSymbol"
 import { StepFormLayout, ContinueButton } from "./primitives"
 import { useTranslation } from "@/context/LanguageContext"
 
@@ -28,7 +28,7 @@ export function WelcomeStep({
     <StepFormLayout
       iconElement={
         <div className="flex size-16 items-center justify-center">
-          <CraftAgentsSymbol className="size-10 text-accent" />
+          <MengkoAgentsSymbol className="size-10 text-accent" />
         </div>
       }
       title={isExistingUser ? t('onboarding.welcome.updateTitle') : t('onboarding.welcome.title')}

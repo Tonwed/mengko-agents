@@ -95,7 +95,7 @@ export const en = {
             richToolDesc: 'Rich tool descriptions',
             richToolDescDesc: 'Add action names and intent descriptions to all tool calls. Provides richer activity context in sessions.',
             toolIcons: 'Tool Icons',
-            toolIconsDesc: 'Icons shown next to CLI commands in chat activity. Stored in ~/.craft-agent/tool-icons/.',
+            toolIconsDesc: 'Icons shown next to CLI commands in chat activity. Stored in ~/.mengko-agent/tool-icons/.',
             useDefault: 'Use Default',
         },
         // Input settings page
@@ -198,15 +198,15 @@ export const en = {
         preferences: {
             title: 'Preferences',
             basicInfo: 'Basic Info',
-            basicInfoDesc: 'Help Craft Agent personalize responses to you.',
+            basicInfoDesc: 'Help Mengko personalize responses to you.',
             nameLabel: 'Name',
-            nameDesc: 'How Craft Agent should address you.',
+            nameDesc: 'How Mengko should address you.',
             namePlaceholder: 'Your name',
             timezoneLabel: 'Timezone',
             timezoneDesc: 'Used for relative dates like \'tomorrow\' or \'next week\'.',
             timezonePlaceholder: 'e.g., America/New_York',
             languageLabel: 'Language',
-            languageDesc: 'Preferred language for Craft Agent\'s responses.',
+            languageDesc: 'Preferred language for Mengko\'s responses.',
             languagePlaceholder: 'e.g., English',
             location: 'Location',
             locationDesc: 'Enables location-aware responses like weather, local time, and regional context.',
@@ -217,8 +217,8 @@ export const en = {
             countryDesc: 'Your country for regional formatting and context.',
             countryPlaceholder: 'e.g., USA',
             notes: 'Notes',
-            notesDesc: 'Free-form context that helps Craft Agent understand your preferences.',
-            notesPlaceholder: 'Any additional context you\'d like Craft Agent to know...',
+            notesDesc: 'Free-form context that helps Mengko understand your preferences.',
+            notesPlaceholder: 'Any additional context you\'d like Mengko to know...',
             editFile: 'Edit File',
         },
         // Providers settings page
@@ -330,7 +330,7 @@ export const en = {
         waitingForAuth: 'Waiting for authorization...',
         // Welcome step
         welcome: {
-            title: 'Welcome to Craft Agents',
+            title: 'Welcome to Mengko Agents',
             description: 'Agents with the UX they deserve. Connect anything. Organize your sessions. Everything you need to do the work of your life!',
             updateTitle: 'Update Settings',
             updateDescription: 'Update your API connection or change your setup.',
@@ -338,7 +338,7 @@ export const en = {
         },
         // Provider select step
         providerSelect: {
-            title: 'Welcome to Craft Agents',
+            title: 'Welcome to Mengko Agents',
             description: 'How would you like to connect?',
             claude: {
                 name: 'Claude Pro / Max',
@@ -376,18 +376,18 @@ export const en = {
             },
             chatGptPlus: {
                 name: 'ChatGPT Plus',
-                description: 'Use your ChatGPT subscription with Craft Agents Backend.',
+                description: 'Use your ChatGPT subscription with Mengko Backend.',
             },
             gitHubCopilot: {
                 name: 'GitHub Copilot',
-                description: 'Use your GitHub Copilot subscription with Craft Agents Backend.',
+                description: 'Use your GitHub Copilot subscription with Mengko Backend.',
             },
             piApiKey: {
                 name: 'API Key',
                 description: 'Use your API key from Anthropic, OpenAI, Google, and more.',
             },
             segmentAnthropicDesc: 'Use Claude Agent SDK as the main agent.\nConfigure with your Claude subscription or API key.',
-            segmentPiDesc: 'Use Craft Agents Backend as the main agent.\nConfigure with your API key, OAuth subscription, or custom endpoint.',
+            segmentPiDesc: 'Use Mengko Backend as the main agent.\nConfigure with your API key, OAuth subscription, or custom endpoint.',
         },
         // Credentials step
         credentials: {
@@ -396,14 +396,14 @@ export const en = {
             apiConfigDescAnthropic: 'Enter your API key. Optionally configure a custom endpoint for OpenRouter, Ollama, or compatible APIs.',
             connectChatGpt: {
                 title: 'Connect ChatGPT',
-                description: 'Use your ChatGPT subscription to power Craft Agents.',
+                description: 'Use your ChatGPT subscription to power Mengko.',
                 signIn: 'Sign in with ChatGPT',
                 instructions: 'Click the button above to sign in with your OpenAI account. A browser window will open for authentication.',
                 success: 'Connected! Your ChatGPT subscription is ready.',
             },
             connectCopilot: {
                 title: 'Connect GitHub Copilot',
-                description: 'Use your GitHub Copilot subscription to power Craft Agents.',
+                description: 'Use your GitHub Copilot subscription to power Mengko.',
                 signIn: 'Sign in with GitHub',
                 instructions: 'Click the button above to sign in with your GitHub account.',
                 deviceCodePrompt: 'Enter this code on GitHub to authorize:',

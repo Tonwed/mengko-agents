@@ -29,19 +29,26 @@ const ELECTRON_BIN = join(ROOT_DIR, `node_modules/.bin/electron${BIN_EXT}`);
 // Detects instance number from folder name suffix (e.g., craft-agents-1 → instance 1)
 function detectInstance(): void {
   // Don't override if already set (e.g., by sourcing detect-instance.sh first)
-  if (process.env.CRAFT_VITE_PORT) return;
+  // Support both MENGKO_* (new) and CRAFT_* (legacy) env vars
+  if (process.env.MENGKO_VITE_PORT || process.env.CRAFT_VITE_PORT) return;
 
   const folderName = basename(ROOT_DIR);
   const match = folderName.match(/-(\d+)$/);
 
   if (match) {
     const instanceNum = match[1];
+    process.env.MENGKO_INSTANCE_NUMBER = instanceNum;
+    process.env.MENGKO_VITE_PORT = `${instanceNum}173`;
+    process.env.MENGKO_APP_NAME = `Mengko Agents [${instanceNum}]`;
+    process.env.MENGKO_CONFIG_DIR = join(process.env.HOME || "", `.mengko-agent-${instanceNum}`);
+    process.env.MENGKO_DEEPLINK_SCHEME = `mengkoagents${instanceNum}`;
+    // Legacy env vars for backward compatibility
     process.env.CRAFT_INSTANCE_NUMBER = instanceNum;
-    process.env.CRAFT_VITE_PORT = `${instanceNum}173`;
-    process.env.CRAFT_APP_NAME = `Craft Agents [${instanceNum}]`;
-    process.env.CRAFT_CONFIG_DIR = join(process.env.HOME || "", `.craft-agent-${instanceNum}`);
-    process.env.CRAFT_DEEPLINK_SCHEME = `craftagents${instanceNum}`;
-    console.log(`🔢 Instance ${instanceNum} detected: port=${process.env.CRAFT_VITE_PORT}, config=${process.env.CRAFT_CONFIG_DIR}`);
+    process.env.CRAFT_VITE_PORT = process.env.MENGKO_VITE_PORT;
+    process.env.CRAFT_APP_NAME = process.env.MENGKO_APP_NAME;
+    process.env.CRAFT_CONFIG_DIR = process.env.MENGKO_CONFIG_DIR;
+    process.env.CRAFT_DEEPLINK_SCHEME = process.env.MENGKO_DEEPLINK_SCHEME;
+    console.log(`🔢 Instance ${instanceNum} detected: port=${process.env.MENGKO_VITE_PORT}, config=${process.env.MENGKO_CONFIG_DIR}`);
   }
 }
 

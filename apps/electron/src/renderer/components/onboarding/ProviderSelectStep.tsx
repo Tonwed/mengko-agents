@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils"
 import { Key, Monitor } from "lucide-react"
-import { CraftAgentsSymbol } from "@/components/icons/CraftAgentsSymbol"
+import { MengkoAgentsSymbol } from "@/components/icons/MengkoAgentsSymbol"
 import { StepFormLayout } from "./primitives"
 import { useTranslation } from "@/context/LanguageContext"
 
@@ -72,7 +72,7 @@ export function ProviderSelectStep({ onSelect }: ProviderSelectStepProps) {
     <StepFormLayout
       iconElement={
         <div className="flex size-16 items-center justify-center">
-          <CraftAgentsSymbol className="size-10 text-accent" />
+          <MengkoAgentsSymbol className="size-10 text-accent" />
         </div>
       }
       title={t('onboarding.providerSelect.title')}
