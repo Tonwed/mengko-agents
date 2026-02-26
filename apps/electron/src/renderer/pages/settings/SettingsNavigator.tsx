@@ -44,13 +44,16 @@ interface SettingsItem {
   openInNewWindowLabel?: string
 }
 
-// Derive settings items from shared schema, using shared custom SVG icons
-const baseSettingsItems = SETTINGS_ITEMS.map((item) => ({
-  id: item.id,
-  label: item.label,
-  icon: SETTINGS_ICONS[item.id],
-  description: item.description,
-}))
+// Derive settings items from shared schema, using shared custom SVG icons.
+// Exclude 'providers' — it lives as a top-level main sidebar item, not inside settings.
+const baseSettingsItems = SETTINGS_ITEMS
+  .filter((item) => item.id !== 'providers')
+  .map((item) => ({
+    id: item.id,
+    label: item.label,
+    icon: SETTINGS_ICONS[item.id],
+    description: item.description,
+  }))
 
 // Translation key mapping for settings nav items
 const NAV_TRANSLATIONS: Record<string, { label: string; desc: string }> = {

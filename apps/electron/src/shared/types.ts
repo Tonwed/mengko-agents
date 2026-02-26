@@ -68,6 +68,7 @@ export type { LlmConnection, LlmConnectionWithStatus, LlmAuthType, LlmProviderTy
 export interface LlmConnectionSetup {
   slug: string              // Connection slug: 'anthropic-api', 'claude-max', 'codex', 'codex-api'
   credential?: string       // API key or OAuth token (stored in credential manager, not config)
+  name?: string             // User-supplied display name (overrides auto-generated name)
   baseUrl?: string | null   // Custom API endpoint (null to clear)
   defaultModel?: string | null  // Custom model override (null to clear)
   models?: string[] | null  // Optional model list for compat providers

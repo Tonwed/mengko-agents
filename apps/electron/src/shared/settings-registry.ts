@@ -34,6 +34,7 @@ export interface SettingsPageDefinition {
 export const SETTINGS_PAGES = [
   { id: 'app', label: 'App', description: 'Notifications and updates' },
   { id: 'ai', label: 'AI', description: 'Model, thinking, connections' },
+  { id: 'providers', label: 'Model Providers', description: 'AI provider connections' },
   { id: 'appearance', label: 'Appearance', description: 'Theme, font, tool icons' },
   { id: 'input', label: 'Input', description: 'Send key, spell check' },
   { id: 'workspace', label: 'Workspace', description: 'Name, icon, working directory' },

@@ -194,7 +194,7 @@ export const en = {
             newLine: 'New line',
             closeBlur: 'Close dialog / blur input',
         },
-        // Preferences settings page  
+        // Preferences settings page
         preferences: {
             title: 'Preferences',
             basicInfo: 'Basic Info',
@@ -221,6 +221,26 @@ export const en = {
             notesPlaceholder: 'Any additional context you\'d like Craft Agent to know...',
             editFile: 'Edit File',
         },
+        // Providers settings page
+        providers: {
+            title: 'Model Providers',
+            noConnections: 'No connections configured.',
+            addProvider: 'Add Provider',
+            endpoint: 'Endpoint',
+            authentication: 'Authentication',
+            apiKey: 'API Key',
+            oauthToken: 'OAuth Token',
+            models: 'Models',
+            contextWindow: 'Context window',
+            validateConnection: 'Validate',
+            setAsDefault: 'Set as Default',
+            rename: 'Rename',
+            delete: 'Delete',
+            edit: 'Edit',
+            defaultBadge: 'Default',
+            selectProvider: 'Select a provider from the list',
+            noBaseUrl: 'Provider default endpoint',
+        },
     },
     // Sidebar
     sidebar: {
@@ -246,6 +266,7 @@ export const en = {
         skills: 'Skills',
         allSkills: 'All Skills',
         settings: 'Settings',
+        providers: 'Model Providers',
         whatsNew: "What's New",
         helpAndDocs: 'Help & Documentation',
         statuses: 'Statuses',
@@ -274,6 +295,8 @@ export const en = {
     // API Key Input form
     apiKeyInput: {
         apiKey: 'API Key',
+        providerName: 'Provider Name',
+        connectionNamePlaceholder: 'My Custom Provider',
         endpoint: 'Endpoint',
         defaultModel: 'Default Model',
         required: 'required',
@@ -281,6 +304,7 @@ export const en = {
         modelListHint: 'Comma-separated list. The first model is the default. The last is used for summarization.',
         customEndpointHint: 'Required for custom endpoints. Use the provider-specific model ID.',
         loadingModels: 'Loading models...',
+        fetchModels: 'Fetch Models',
         selectModel: 'Select model...',
         searchModels: 'Search models...',
         selectModelForEachTier: 'Please select a model for each tier.',

@@ -223,6 +223,26 @@ export const zh: Translations = {
             notesPlaceholder: '您希望 Craft Agent 了解的任何其他信息...',
             editFile: '编辑文件',
         },
+        // 模型供应商设置页面
+        providers: {
+            title: '模型供应商',
+            noConnections: '未配置任何连接。',
+            addProvider: '添加供应商',
+            endpoint: '端点',
+            authentication: '认证',
+            apiKey: 'API 密钥',
+            oauthToken: 'OAuth 令牌',
+            models: '模型列表',
+            contextWindow: '上下文窗口',
+            validateConnection: '验证',
+            setAsDefault: '设为默认',
+            rename: '重命名',
+            delete: '删除',
+            edit: '编辑',
+            defaultBadge: '默认',
+            selectProvider: '从左侧列表选择供应商',
+            noBaseUrl: '使用供应商默认端点',
+        },
     },
     // 侧边栏
     sidebar: {
@@ -248,6 +268,7 @@ export const zh: Translations = {
         skills: '技能',
         allSkills: '所有技能',
         settings: '设置',
+        providers: '模型供应商',
         whatsNew: '最新动态',
         helpAndDocs: '帮助与文档',
         statuses: '状态',
@@ -276,6 +297,8 @@ export const zh: Translations = {
     // API Key 输入表单
     apiKeyInput: {
         apiKey: 'API 密钥',
+        providerName: '供应商名称',
+        connectionNamePlaceholder: '我的自定义供应商',
         endpoint: '端点',
         defaultModel: '默认模型',
         required: '必填',
@@ -283,6 +306,7 @@ export const zh: Translations = {
         modelListHint: '逗号分隔列表。第一个模型为默认值，最后一个用于摘要。',
         customEndpointHint: '自定义端点必填。请使用提供商特定的模型 ID。',
         loadingModels: '加载模型中...',
+        fetchModels: '获取模型列表',
         selectModel: '选择模型...',
         searchModels: '搜索模型...',
         selectModelForEachTier: '请为每个层级选择一个模型。',

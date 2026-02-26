@@ -21,13 +21,14 @@ import {
   StyledDropdownMenuItem,
 } from "@/components/ui/styled-dropdown"
 import { cn } from "@/lib/utils"
-import { Check, ChevronDown, Eye, EyeOff, Loader2 } from "lucide-react"
+import { Check, ChevronDown, Eye, EyeOff, Loader2, RefreshCw, X } from "lucide-react"
 import { useTranslation } from "@/context/LanguageContext"
 
 export type ApiKeyStatus = 'idle' | 'validating' | 'success' | 'error'
 
 export interface ApiKeySubmitData {
   apiKey: string
+  name?: string
   baseUrl?: string
   connectionDefaultModel?: string
   models?: string[]
@@ -54,6 +55,8 @@ export interface ApiKeyInputProps {
     connectionDefaultModel?: string
     activePreset?: string
   }
+  /** Whether this is a new connection (show name field) */
+  isNewConnection?: boolean
 }
 
 // Preset key — string to support dynamic Pi SDK providers
@@ -159,22 +162,65 @@ export function ApiKeyInput({
   disabled,
   providerType = 'anthropic',
   initialValues,
+  isNewConnection,
 }: ApiKeyInputProps) {
   // Get presets based on provider type
   const presets = getPresetsForProvider(providerType)
-  const defaultPreset = presets[0]
+  // For pi_api_key new connections, default to 'custom' preset
+  const defaultPresetKey = (providerType === 'pi_api_key' && !initialValues?.activePreset) ? 'custom' : presets[0].key
+  const defaultPreset = presets.find(p => p.key === defaultPresetKey) ?? presets[0]
   const { t } = useTranslation()
 
   // Compute initial preset: explicit (Pi piAuthProvider), derived from URL, or default
   const initialPreset = initialValues?.activePreset
     ?? (initialValues?.baseUrl ? getPresetForUrl(initialValues.baseUrl, presets) : defaultPreset.key)
 
+  const [name, setName] = useState('')
   const [apiKey, setApiKey] = useState(initialValues?.apiKey ?? '')
   const [showValue, setShowValue] = useState(false)
   const [baseUrl, setBaseUrl] = useState(initialValues?.baseUrl ?? defaultPreset.url)
   const [activePreset, setActivePreset] = useState<PresetKey>(initialPreset)
   const [connectionDefaultModel, setConnectionDefaultModel] = useState(initialValues?.connectionDefaultModel ?? '')
   const [modelError, setModelError] = useState<string | null>(null)
+
+  // Fetch models from OpenAI-compatible endpoint
+  const [fetchedModels, setFetchedModels] = useState<string[]>([])
+  const [fetchingModels, setFetchingModels] = useState(false)
+  const [fetchModelsError, setFetchModelsError] = useState<string | null>(null)
+  const [showModelPicker, setShowModelPicker] = useState(false)
+  const [modelPickerFilter, setModelPickerFilter] = useState('')
+  const modelPickerRef = useRef<HTMLInputElement>(null)
+
+  const handleFetchModels = useCallback(async () => {
+    const url = baseUrl.trim()
+    const key = apiKey.trim()
+    if (!url || !key) return
+    setFetchingModels(true)
+    setFetchModelsError(null)
+    setFetchedModels([])
+    try {
+      const normalized = url.replace(/\/$/, '')
+      // If URL already ends with /v1 (or /v2 etc.) just append /models,
+      // otherwise assume bare host and add /v1/models
+      const modelsEndpoint = /\/v\d+$/.test(normalized)
+        ? normalized + '/models'
+        : normalized + '/v1/models'
+      const res = await fetch(modelsEndpoint, {
+        headers: { Authorization: `Bearer ${key}` },
+      })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const json = await res.json()
+      const ids: string[] = (json?.data ?? []).map((m: { id: string }) => m.id).sort()
+      if (ids.length === 0) throw new Error('No models returned')
+      setFetchedModels(ids)
+      setShowModelPicker(true)
+      setTimeout(() => modelPickerRef.current?.focus(), 0)
+    } catch (err) {
+      setFetchModelsError(err instanceof Error ? err.message : 'Failed to fetch models')
+    } finally {
+      setFetchingModels(false)
+    }
+  }, [baseUrl, apiKey])
 
   // Pi model tier state (for providers with many models like OpenRouter, Vercel)
   const [piModels, setPiModels] = useState<PiModelInfo[]>([])
@@ -241,13 +287,8 @@ export function ApiKeyInput({
     }
     setModelError(null)
     // Pre-fill recommended model for Ollama; clear for all others
-    // (Default provider presets hide the field entirely, others default to provider model IDs when empty)
     if (preset.key === 'ollama') {
       setConnectionDefaultModel('qwen3-coder')
-    } else if (preset.key === 'openrouter' || preset.key === 'vercel-ai-gateway') {
-      setConnectionDefaultModel(providerType === 'openai' ? COMPAT_OPENAI_DEFAULTS : COMPAT_ANTHROPIC_DEFAULTS)
-    } else if (preset.key === 'custom') {
-      setConnectionDefaultModel(providerType === 'openai' ? COMPAT_OPENAI_DEFAULTS : COMPAT_ANTHROPIC_DEFAULTS)
     } else {
       setConnectionDefaultModel('')
     }
@@ -258,13 +299,6 @@ export function ApiKeyInput({
     const presetKey = getPresetForUrl(value, presets)
     setActivePreset(presetKey)
     setModelError(null)
-    if (!connectionDefaultModel.trim()) {
-      if (presetKey === 'ollama') {
-        setConnectionDefaultModel('qwen3-coder')
-      } else if (presetKey === 'openrouter' || presetKey === 'vercel-ai-gateway' || presetKey === 'custom') {
-        setConnectionDefaultModel(providerType === 'openai' ? COMPAT_OPENAI_DEFAULTS : COMPAT_ANTHROPIC_DEFAULTS)
-      }
-    }
   }
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -284,6 +318,7 @@ export function ApiKeyInput({
       }
       onSubmit({
         apiKey: apiKey.trim(),
+        name: name.trim() || undefined,
         baseUrl: baseUrl.trim() || undefined,
         connectionDefaultModel: bestModel,
         models,
@@ -305,6 +340,7 @@ export function ApiKeyInput({
 
     onSubmit({
       apiKey: apiKey.trim(),
+      name: name.trim() || undefined,
       baseUrl: isUsingDefaultEndpoint ? undefined : effectiveBaseUrl,
       connectionDefaultModel: parsedModels[0],
       models: parsedModels.length > 0 ? parsedModels : undefined,
@@ -321,6 +357,25 @@ export function ApiKeyInput({
 
   return (
     <form id={formId} onSubmit={handleSubmit} className="space-y-6">
+      {/* Provider name — always shown so users can label their connection */}
+      <div className="space-y-2">
+        <Label htmlFor="connection-name">{t('apiKeyInput.providerName')}</Label>
+        <div className={cn(
+          "rounded-md shadow-minimal transition-colors",
+          "bg-foreground-2 focus-within:bg-background"
+        )}>
+          <Input
+            id="connection-name"
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder={t('apiKeyInput.connectionNamePlaceholder')}
+            className="border-0 bg-transparent shadow-none"
+            disabled={isDisabled}
+          />
+        </div>
+      </div>
+
       {/* API Key */}
       <div className="space-y-2">
         <Label htmlFor="api-key">{t('apiKeyInput.apiKey')}</Label>
@@ -515,12 +570,89 @@ export function ApiKeyInput({
         </div>
       ) : !isDefaultProviderPreset && (
         <div className="space-y-2">
-          <Label htmlFor="connection-default-model" className="text-muted-foreground font-normal">
-            {t('apiKeyInput.defaultModel')}{' '}
-            <span className="text-foreground/30">
-              · {baseUrl.trim() ? t('apiKeyInput.required') : t('apiKeyInput.optional')}
-            </span>
-          </Label>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="connection-default-model" className="text-muted-foreground font-normal">
+              {t('apiKeyInput.defaultModel')}{' '}
+              <span className="text-foreground/30">
+                · {baseUrl.trim() ? t('apiKeyInput.required') : t('apiKeyInput.optional')}
+              </span>
+            </Label>
+            {/* Fetch models button — shown for custom endpoints, disabled until URL + key are filled */}
+            <button
+              type="button"
+              onClick={handleFetchModels}
+              disabled={!baseUrl.trim() || !apiKey.trim() || fetchingModels || isDisabled}
+              className="flex items-center gap-1 h-6 px-2 rounded-[6px] bg-background shadow-minimal text-[12px] font-medium text-foreground/50 hover:bg-foreground/5 hover:text-foreground disabled:opacity-40 disabled:pointer-events-none transition-colors"
+            >
+              {fetchingModels
+                ? <Loader2 className="size-3 animate-spin" />
+                : <RefreshCw className="size-3" />
+              }
+              {t('apiKeyInput.fetchModels')}
+            </button>
+          </div>
+
+          {/* Model picker (shown after fetching — stays open until user clicks X) */}
+          {showModelPicker && fetchedModels.length > 0 && (
+            <div className="relative">
+              <div className="rounded-[8px] border border-border/50 bg-background overflow-hidden">
+                <div className="flex items-center border-b border-border/50 px-3 py-2 gap-2">
+                  <CommandPrimitive shouldFilter={false} className="flex-1">
+                    <CommandPrimitive.Input
+                      ref={modelPickerRef}
+                      value={modelPickerFilter}
+                      onValueChange={setModelPickerFilter}
+                      placeholder={t('apiKeyInput.searchModels')}
+                      className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+                    />
+                  </CommandPrimitive>
+                  <button
+                    type="button"
+                    onClick={() => { setShowModelPicker(false); setModelPickerFilter('') }}
+                    className="shrink-0 flex items-center justify-center h-5 w-5 rounded text-muted-foreground hover:text-foreground hover:bg-foreground/5 transition-colors"
+                  >
+                    <X className="size-3.5" />
+                  </button>
+                </div>
+                <CommandPrimitive shouldFilter={false}>
+                  <CommandPrimitive.List className="max-h-[200px] overflow-y-auto p-1">
+                    {fetchedModels
+                      .filter(id => id.toLowerCase().includes(modelPickerFilter.toLowerCase()))
+                      .map(id => {
+                        const selected = connectionDefaultModel.split(',').map(s => s.trim()).filter(Boolean).includes(id)
+                        return (
+                          <CommandPrimitive.Item
+                            key={id}
+                            value={id}
+                            onSelect={() => {
+                              const parts = connectionDefaultModel.split(',').map(s => s.trim()).filter(Boolean)
+                              if (selected) {
+                                // Deselect: remove from list
+                                setConnectionDefaultModel(parts.filter(p => p !== id).join(', '))
+                              } else {
+                                // Select: append
+                                setConnectionDefaultModel(parts.length ? `${connectionDefaultModel.trimEnd().replace(/,\s*$/, '')}, ${id}` : id)
+                              }
+                              setModelError(null)
+                            }}
+                            className={cn(
+                              "flex cursor-pointer select-none items-center justify-between rounded-[6px] px-3 py-2 text-[13px] outline-none",
+                              selected
+                                ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 data-[selected=true]:bg-emerald-500/15"
+                                : "data-[selected=true]:bg-foreground/5"
+                            )}
+                          >
+                            <span className="truncate font-mono text-xs">{id}</span>
+                            <Check className={cn("size-3 shrink-0 ml-2 transition-opacity", selected ? "opacity-100 text-emerald-600 dark:text-emerald-400" : "opacity-0")} />
+                          </CommandPrimitive.Item>
+                        )
+                      })}
+                  </CommandPrimitive.List>
+                </CommandPrimitive>
+              </div>
+            </div>
+          )}
+
           <div className={cn(
             "rounded-md shadow-minimal transition-colors",
             "bg-foreground-2 focus-within:bg-background",
@@ -541,6 +673,9 @@ export function ApiKeyInput({
           </div>
           {modelError && (
             <p className="text-xs text-destructive">{modelError}</p>
+          )}
+          {fetchModelsError && (
+            <p className="text-xs text-destructive">{fetchModelsError}</p>
           )}
           <p className="text-xs text-foreground/30">
             {t('apiKeyInput.modelListHint')}

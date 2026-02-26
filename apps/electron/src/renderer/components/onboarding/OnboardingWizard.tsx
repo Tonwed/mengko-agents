@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils"
+import { X } from "lucide-react"
 import { WelcomeStep } from "./WelcomeStep"
 import type { ApiSetupMethod } from "./APISetupStep"
 import { ProviderSelectStep, type ProviderChoice } from "./ProviderSelectStep"
@@ -71,6 +72,9 @@ interface OnboardingWizardProps {
     activePreset?: string
   }
 
+  /** Optional close button handler — shows an X in the top-right corner */
+  onClose?: () => void
+
   className?: string
 }
 
@@ -108,6 +112,7 @@ export function OnboardingWizard({
   onSubmitLocalModel,
   // Edit mode
   editInitialValues,
+  onClose,
   className
 }: OnboardingWizardProps) {
   const renderStep = () => {
@@ -192,6 +197,17 @@ export function OnboardingWizard({
     >
       {/* Draggable title bar region for transparent window (macOS) */}
       <div className="titlebar-drag-region fixed top-0 left-0 right-0 h-[50px] z-titlebar" />
+
+      {/* Close button */}
+      {onClose && (
+        <button
+          type="button"
+          onClick={onClose}
+          className="fixed top-3 right-3 z-[9999] titlebar-no-drag flex items-center justify-center h-8 w-8 rounded-[6px] text-muted-foreground hover:text-foreground hover:bg-foreground/[0.06] transition-colors"
+        >
+          <X className="h-4 w-4" />
+        </button>
+      )}
 
       {/* Main content */}
       <main className="flex flex-1 items-center justify-center p-8">

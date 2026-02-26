@@ -119,7 +119,7 @@ export function resolveSlugForMethod(
 // Map ApiSetupMethod to LlmConnectionSetup for the new unified connection system
 export function apiSetupMethodToConnectionSetup(
   method: ApiSetupMethod,
-  options: { credential?: string; baseUrl?: string; connectionDefaultModel?: string; models?: string[]; piAuthProvider?: string },
+  options: { credential?: string; name?: string; baseUrl?: string; connectionDefaultModel?: string; models?: string[]; piAuthProvider?: string },
   editingSlug: string | null,
   existingSlugs: Set<string>,
 ): LlmConnectionSetup {
@@ -130,6 +130,7 @@ export function apiSetupMethodToConnectionSetup(
       return {
         slug,
         credential: options.credential,
+        name: options.name,
         baseUrl: options.baseUrl,
         defaultModel: options.connectionDefaultModel,
         models: options.models,
@@ -149,6 +150,7 @@ export function apiSetupMethodToConnectionSetup(
       return {
         slug,
         credential: options.credential,
+        name: options.name,
         baseUrl: options.baseUrl,
         defaultModel: options.connectionDefaultModel,
         models: options.models,
@@ -199,7 +201,7 @@ export function useOnboarding({
   // Returns true on success, false on failure (sets errorMessage on failure)
   // `methodOverride` lets callers pass the method explicitly to avoid stale-closure issues
   // (e.g. when called from an async OAuth flow whose closure predates the state update).
-  const handleSaveConfig = useCallback(async (credential?: string, options?: { baseUrl?: string; connectionDefaultModel?: string; models?: string[]; piAuthProvider?: string }, methodOverride?: ApiSetupMethod): Promise<boolean> => {
+  const handleSaveConfig = useCallback(async (credential?: string, options?: { name?: string; baseUrl?: string; connectionDefaultModel?: string; models?: string[]; piAuthProvider?: string }, methodOverride?: ApiSetupMethod): Promise<boolean> => {
     const method = methodOverride ?? state.apiSetupMethod
     if (!method) {
       return false
@@ -211,6 +213,7 @@ export function useOnboarding({
       // Build connection setup from UI state
       const setup = apiSetupMethodToConnectionSetup(method, {
         credential,
+        name: options?.name,
         baseUrl: options?.baseUrl,
         connectionDefaultModel: options?.connectionDefaultModel,
         models: options?.models,
@@ -320,6 +323,7 @@ export function useOnboarding({
       // When editing an existing connection, API key is optional (empty = keep existing credential)
       if (!data.apiKey.trim() && editingSlug) {
         const saved = await handleSaveConfig(undefined, {
+          name: data.name,
           baseUrl: data.baseUrl,
           connectionDefaultModel: data.connectionDefaultModel,
           models: data.models,
@@ -378,6 +382,7 @@ export function useOnboarding({
       }
 
       const saved = await handleSaveConfig(data.apiKey, {
+        name: data.name,
         baseUrl: data.baseUrl,
         connectionDefaultModel: data.connectionDefaultModel,
         models: data.models,

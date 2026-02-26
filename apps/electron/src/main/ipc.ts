@@ -1302,16 +1302,23 @@ export function registerIpcHandlers(sessionManager: SessionManager, windowManage
       // Pi API key flow: set piAuthProvider from setup data (e.g. 'anthropic', 'google', 'openai')
       if (setup.piAuthProvider) {
         updates.piAuthProvider = setup.piAuthProvider
-        // Update connection name to show the actual provider (e.g. "Craft Agents Backend (Google AI Studio)")
-        const providerName = piAuthProviderDisplayName(setup.piAuthProvider)
-        if (providerName) {
-          updates.name = `Craft Agents Backend (${providerName})`
+        // Update connection name to show the actual provider — only if user didn't supply a custom name
+        if (!setup.name) {
+          const providerName = piAuthProviderDisplayName(setup.piAuthProvider)
+          if (providerName) {
+            updates.name = `Craft Agents Backend (${providerName})`
+          }
         }
         // Only set default models when using standard Pi provider AND user didn't pick explicit models
         if (!hasCustomEndpoint && !setup.models?.length) {
           updates.models = getDefaultModelsForConnection('pi', setup.piAuthProvider)
           updates.defaultModel = getDefaultModelForConnection('pi', setup.piAuthProvider)
         }
+      }
+
+      // Apply user-supplied name (takes precedence over all auto-generated names)
+      if (setup.name?.trim()) {
+        updates.name = setup.name.trim()
       }
 
       const pendingConnection: LlmConnection = {

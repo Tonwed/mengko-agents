@@ -86,6 +86,7 @@ import type { Session, Workspace, FileAttachment, PermissionRequest, LoadedSourc
 import { sessionMetaMapAtom, type SessionMeta } from "@/atoms/sessions"
 import { sourcesAtom } from "@/atoms/sources"
 import { skillsAtom } from "@/atoms/skills"
+import { addProviderCallbackAtom } from "@/atoms/providers"
 import { type SessionStatusId, type SessionStatus, statusConfigsToSessionStatuses } from "@/config/session-status-config"
 import { useStatuses } from "@/hooks/useStatuses"
 import { useLabels } from "@/hooks/useLabels"
@@ -111,6 +112,7 @@ import {
 import type { SettingsSubpage } from "../../../shared/types"
 import { SourcesListPanel } from "./SourcesListPanel"
 import { SkillsListPanel } from "./SkillsListPanel"
+import { ProvidersListPanel } from "./ProvidersListPanel"
 import { PanelHeader } from "./PanelHeader"
 import { EditPopover, getEditConfig, type EditContextKey } from "@/components/ui/EditPopover"
 import { getDocUrl } from "@craft-agent/shared/docs/doc-links"
@@ -428,6 +430,18 @@ function FilterLabelItems({
 
 const PANEL_WINDOW_EDGE_SPACING = 6 // Padding between panels and window edge
 const PANEL_PANEL_SPACING = 5 // Gap between adjacent panels
+
+/** Small + button rendered in the panel header when on the providers page. */
+function AddProviderButton() {
+  const addProvider = useAtomValue(addProviderCallbackAtom)
+  return (
+    <HeaderIconButton
+      icon={<Plus className="h-4 w-4" />}
+      tooltip="Add Provider"
+      onClick={() => addProvider?.()}
+    />
+  )
+}
 
 /**
  * AppShell - Main 3-panel layout container
@@ -1578,6 +1592,11 @@ function AppShellContent({
     navigate(routes.view.skills())
   }, [])
 
+  // Handler for model providers view
+  const handleProvidersClick = useCallback(() => {
+    navigate(routes.view.settings('providers'))
+  }, [])
+
   // Handler for settings view
   const handleSettingsClick = useCallback((subpage: SettingsSubpage = 'app') => {
     navigate(routes.view.settings(subpage))
@@ -1801,11 +1820,12 @@ function AppShellContent({
     // 3. Sources, Skills, Settings
     result.push({ id: 'nav:sources', type: 'nav', action: handleSourcesClick })
     result.push({ id: 'nav:skills', type: 'nav', action: handleSkillsClick })
+    result.push({ id: 'nav:providers', type: 'nav', action: handleProvidersClick })
     result.push({ id: 'nav:settings', type: 'nav', action: () => handleSettingsClick('app') })
     result.push({ id: 'nav:whats-new', type: 'nav', action: handleWhatsNewClick })
 
     return result
-  }, [handleAllSessionsClick, handleFlaggedClick, handleArchivedClick, handleSessionStatusClick, effectiveSessionStatuses, handleLabelClick, labelConfigs, labelTree, viewConfigs, handleViewClick, handleSourcesClick, handleSkillsClick, handleSettingsClick, handleWhatsNewClick])
+  }, [handleAllSessionsClick, handleFlaggedClick, handleArchivedClick, handleSessionStatusClick, effectiveSessionStatuses, handleLabelClick, labelConfigs, labelTree, viewConfigs, handleViewClick, handleSourcesClick, handleSkillsClick, handleProvidersClick, handleSettingsClick, handleWhatsNewClick])
 
   // Toggle folder expanded state
   const handleToggleFolder = React.useCallback((path: string) => {
@@ -1925,7 +1945,10 @@ function AppShellContent({
     }
 
     // Settings navigator
-    if (isSettingsNavigation(navState)) return t('sidebar.settings')
+    if (isSettingsNavigation(navState)) {
+      if (navState.subpage === 'providers') return t('sidebar.providers')
+      return t('sidebar.settings')
+    }
 
     // Sessions navigator - use sessionFilter
     if (!sessionFilter) return t('sidebar.allSessions')
@@ -2266,12 +2289,20 @@ function AppShellContent({
                       },
                       // --- Separator ---
                       { id: "separator:skills-settings", type: "separator" },
+                      // --- Model Providers ---
+                      {
+                        id: "nav:providers",
+                        title: t('sidebar.providers'),
+                        icon: DatabaseZap,
+                        variant: (isSettingsNavigation(navState) && navState.subpage === 'providers') ? "default" : "ghost",
+                        onClick: handleProvidersClick,
+                      },
                       // --- Settings ---
                       {
                         id: "nav:settings",
                         title: t('sidebar.settings'),
                         icon: Settings,
-                        variant: isSettingsNavigation(navState) ? "default" : "ghost",
+                        variant: (isSettingsNavigation(navState) && navState.subpage !== 'providers') ? "default" : "ghost",
                         onClick: () => handleSettingsClick('app'),
                       },
                       // --- What's New ---
@@ -2966,6 +2997,10 @@ function AppShellContent({
                         {...getEditConfig('add-skill', activeWorkspace.rootPath)}
                       />
                     )}
+                    {/* Add Provider button (only for providers mode) */}
+                    {isSettingsNavigation(navState) && navState.subpage === 'providers' && (
+                      <AddProviderButton />
+                    )}
                   </>
                 }
               />
@@ -2993,8 +3028,12 @@ function AppShellContent({
                   selectedSkillSlug={isSkillsNavigation(navState) && navState.details?.type === 'skill' ? navState.details.skillSlug : null}
                 />
               )}
-              {isSettingsNavigation(navState) && (
-                /* Settings Navigator */
+              {isSettingsNavigation(navState) && navState.subpage === 'providers' && (
+                /* Providers List - shown as middle panel for Model Providers nav item */
+                <ProvidersListPanel />
+              )}
+              {isSettingsNavigation(navState) && navState.subpage !== 'providers' && (
+                /* Settings Navigator - shown for all other settings subpages */
                 <SettingsNavigator
                   selectedSubpage={navState.subpage}
                   onSelectSubpage={(subpage) => handleSettingsClick(subpage)}
