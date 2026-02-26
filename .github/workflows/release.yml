@@ -47,6 +47,7 @@ jobs:
         if: matrix.platform == 'mac'
         run: bun run electron:dist:mac
         env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CSC_LINK: ${{ secrets.MAC_CERT }}
           CSC_KEY_PASSWORD: ${{ secrets.MAC_CERT_PASSWORD }}
           APPLE_ID: ${{ secrets.APPLE_ID }}
@@ -56,10 +57,14 @@ jobs:
       - name: Build Electron app (Windows)
         if: matrix.platform == 'win'
         run: bun run electron:dist:win
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build Electron app (Linux)
         if: matrix.platform == 'linux'
         run: bun run electron:dist:linux
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload artifacts (macOS)
         if: matrix.platform == 'mac'
