@@ -48,8 +48,8 @@ extraMetadata:
 # Auto-update: publish to GitHub Releases
 publish:
   provider: github
-  owner: mengko
-  repo: mengko-agents
+  owner: Tonwed
+  repo: craft-agents-oss
 
 # Disable ASAR to avoid decompression overhead and click delays
 asar: false
