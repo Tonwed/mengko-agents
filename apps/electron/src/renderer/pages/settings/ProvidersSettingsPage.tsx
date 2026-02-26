@@ -345,6 +345,7 @@ export default function ProvidersSettingsPage() {
   const [isDirectEdit, setIsDirectEdit] = useState(false)
   const [editInitialValues, setEditInitialValues] = useState<{
     apiKey?: string
+    name?: string
     baseUrl?: string
     connectionDefaultModel?: string
     activePreset?: string
@@ -458,6 +459,7 @@ export default function ProvidersSettingsPage() {
 
     setEditInitialValues({
       apiKey,
+      name: connection.name,
       baseUrl: connection.baseUrl,
       connectionDefaultModel: modelStr,
       activePreset: connection.piAuthProvider || undefined,

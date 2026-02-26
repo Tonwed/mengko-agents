@@ -219,6 +219,10 @@ export function useOnboarding({
         models: options?.models,
         piAuthProvider: options?.piAuthProvider,
       }, editingSlug, existingSlugs)
+
+      // Debug: log what we're sending
+      console.log('[useOnboarding] handleSaveConfig - setup:', JSON.stringify(setup, null, 2))
+
       // Use new unified API
       const result = await window.electronAPI.setupLlmConnection(setup)
 
@@ -406,7 +410,7 @@ export function useOnboarding({
         errorMessage: error instanceof Error ? error.message : 'Validation failed',
       }))
     }
-  }, [handleSaveConfig, state.apiSetupMethod])
+  }, [handleSaveConfig, state.apiSetupMethod, editingSlug])
 
   // Save config, validate the connection, and update state accordingly.
   // Shared by all OAuth flows after tokens are captured.

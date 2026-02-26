@@ -51,6 +51,7 @@ export interface ApiKeyInputProps {
   /** Pre-fill values when editing an existing connection */
   initialValues?: {
     apiKey?: string
+    name?: string
     baseUrl?: string
     connectionDefaultModel?: string
     activePreset?: string
@@ -175,13 +176,20 @@ export function ApiKeyInput({
   const initialPreset = initialValues?.activePreset
     ?? (initialValues?.baseUrl ? getPresetForUrl(initialValues.baseUrl, presets) : defaultPreset.key)
 
-  const [name, setName] = useState('')
+  const [name, setName] = useState(initialValues?.name ?? '')
   const [apiKey, setApiKey] = useState(initialValues?.apiKey ?? '')
   const [showValue, setShowValue] = useState(false)
   const [baseUrl, setBaseUrl] = useState(initialValues?.baseUrl ?? defaultPreset.url)
   const [activePreset, setActivePreset] = useState<PresetKey>(initialPreset)
   const [connectionDefaultModel, setConnectionDefaultModel] = useState(initialValues?.connectionDefaultModel ?? '')
   const [modelError, setModelError] = useState<string | null>(null)
+
+  // Sync name when initialValues changes (e.g., switching between edit targets)
+  useEffect(() => {
+    if (initialValues?.name !== undefined) {
+      setName(initialValues.name)
+    }
+  }, [initialValues?.name])
 
   // Fetch models from OpenAI-compatible endpoint
   const [fetchedModels, setFetchedModels] = useState<string[]>([])
@@ -303,6 +311,9 @@ export function ApiKeyInput({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+
+    // Debug: log the name being submitted
+    console.log('[ApiKeyInput] handleSubmit - name:', name.trim() || undefined)
 
     // Pi API key flow with tier dropdowns — submit selected models
     if (hasPiModels) {

@@ -36,6 +36,7 @@ interface CredentialsStepProps {
   // Edit mode (pre-fill existing connection values)
   editInitialValues?: {
     apiKey?: string
+    name?: string
     baseUrl?: string
     connectionDefaultModel?: string
     activePreset?: string
