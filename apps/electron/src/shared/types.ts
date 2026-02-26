@@ -759,7 +759,7 @@ export const IPC_CHANNELS = {
   SOURCES_START_OAUTH: 'sources:startOAuth',
   SOURCES_SAVE_CREDENTIALS: 'sources:saveCredentials',
   SOURCES_CHANGED: 'sources:changed',
-  
+
   // Source permissions config
   SOURCES_GET_PERMISSIONS: 'sources:getPermissions',
   // Workspace permissions config (for Explore mode)
@@ -851,6 +851,9 @@ export const IPC_CHANNELS = {
   // Appearance settings
   APPEARANCE_GET_RICH_TOOL_DESCRIPTIONS: 'appearance:getRichToolDescriptions',
   APPEARANCE_SET_RICH_TOOL_DESCRIPTIONS: 'appearance:setRichToolDescriptions',
+  APPEARANCE_GET_UI_LANGUAGE: 'appearance:getUiLanguage',
+  APPEARANCE_SET_UI_LANGUAGE: 'appearance:setUiLanguage',
+  APPEARANCE_UI_LANGUAGE_CHANGED: 'appearance:uiLanguageChanged',
 
   BADGE_UPDATE: 'badge:update',
   BADGE_CLEAR: 'badge:clear',
@@ -1160,6 +1163,9 @@ export interface ElectronAPI {
   // Appearance settings
   getRichToolDescriptions(): Promise<boolean>
   setRichToolDescriptions(enabled: boolean): Promise<void>
+  getUiLanguage(): Promise<'en' | 'zh'>
+  setUiLanguage(lang: 'en' | 'zh'): Promise<void>
+  onUiLanguageChange(callback: (lang: 'en' | 'zh') => void): () => void
 
   updateBadgeCount(count: number): Promise<void>
   clearBadgeCount(): Promise<void>

@@ -1,0 +1,10 @@
+{
+  "name": "@craft-agent/pi-agent-server",
+  "version": "0.5.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": "dist/index.js",
+  "scripts": {
+    "build": "bun build src/index.ts --outfile dist/index.js --target bun"
+  }
+}

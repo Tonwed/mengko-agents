@@ -466,6 +466,19 @@ const api: ElectronAPI = {
     ipcRenderer.invoke(IPC_CHANNELS.APPEARANCE_GET_RICH_TOOL_DESCRIPTIONS) as Promise<boolean>,
   setRichToolDescriptions: (enabled: boolean) =>
     ipcRenderer.invoke(IPC_CHANNELS.APPEARANCE_SET_RICH_TOOL_DESCRIPTIONS, enabled),
+  getUiLanguage: () =>
+    ipcRenderer.invoke(IPC_CHANNELS.APPEARANCE_GET_UI_LANGUAGE) as Promise<'en' | 'zh'>,
+  setUiLanguage: (lang: 'en' | 'zh') =>
+    ipcRenderer.invoke(IPC_CHANNELS.APPEARANCE_SET_UI_LANGUAGE, lang),
+  onUiLanguageChange: (callback: (lang: 'en' | 'zh') => void) => {
+    const handler = (_event: Electron.IpcRendererEvent, lang: 'en' | 'zh') => {
+      callback(lang)
+    }
+    ipcRenderer.on(IPC_CHANNELS.APPEARANCE_UI_LANGUAGE_CHANGED, handler)
+    return () => {
+      ipcRenderer.removeListener(IPC_CHANNELS.APPEARANCE_UI_LANGUAGE_CHANGED, handler)
+    }
+  },
 
   updateBadgeCount: (count: number) =>
     ipcRenderer.invoke(IPC_CHANNELS.BADGE_UPDATE, count),

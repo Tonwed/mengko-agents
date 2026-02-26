@@ -59,7 +59,7 @@ function loadEnvFile(): void {
           let value = trimmed.slice(eqIndex + 1).trim();
           // Remove surrounding quotes if present
           if ((value.startsWith('"') && value.endsWith('"')) ||
-              (value.startsWith("'") && value.endsWith("'"))) {
+            (value.startsWith("'") && value.endsWith("'"))) {
             value = value.slice(1, -1);
           }
           process.env[key] = value;
@@ -174,12 +174,17 @@ async function buildMcpServers(): Promise<void> {
 
   // Build Pi agent server with bun (not esbuild) because its Pi SDK deps are ESM-only.
   // esbuild with packages:external leaves them as require() calls which fail at runtime.
+  // SKIPPED: The user has manually dropped in the proprietary compiled `dist/index.js` payload.
+  // Running this build step directly will overwrite the user's valid binary with a dummy file.
+  /*
   const piResult = await buildPiAgentServer();
   if (!piResult.success) {
     console.error("❌ Pi agent server build failed:", piResult.error);
     process.exit(1);
   }
   console.log("✅ Pi agent server built");
+  */
+  console.log("✅ Pi agent server build skipped (using precompiled proprietary payload)");
 }
 
 // Get OAuth defines for esbuild API
@@ -216,6 +221,7 @@ function getElectronEnv(): Record<string, string> {
     CRAFT_APP_NAME: process.env.CRAFT_APP_NAME || "Craft Agents",
     CRAFT_DEEPLINK_SCHEME: process.env.CRAFT_DEEPLINK_SCHEME || "craftagents",
     CRAFT_INSTANCE_NUMBER: process.env.CRAFT_INSTANCE_NUMBER || "",
+    CRAFT_BUN_PATH: process.execPath, // Pass the absolute path of this Bun executable to Electron
   };
 }
 
@@ -250,8 +256,19 @@ async function runEsbuild(
 // Bun's bundler handles ESM→ESM bundling correctly.
 async function buildPiAgentServer(): Promise<{ success: boolean; error?: string }> {
   try {
+    // Check if dist file already exists and is valid
+    if (existsSync(PI_AGENT_SERVER_OUTPUT)) {
+      const stats = statSync(PI_AGENT_SERVER_OUTPUT);
+      if (stats.size > 0) {
+        const verification = await verifyJsFile(PI_AGENT_SERVER_OUTPUT);
+        if (verification.valid) {
+          return { success: true };
+        }
+      }
+    }
+
     const proc = spawn({
-      cmd: ["bun", "build", "src/index.ts", "--outdir=dist", "--target=bun", "--format=esm"],
+      cmd: ["bun", "build", "src/index.ts", "--outfile=dist/index.js", "--target=bun", "--format=esm"],
       cwd: PI_AGENT_SERVER_DIR,
       stdout: "pipe",
       stderr: "pipe",

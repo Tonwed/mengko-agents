@@ -13,6 +13,7 @@ import { HeaderMenu } from '@/components/ui/HeaderMenu'
 import { EditPopover, EditButton, getEditConfig } from '@/components/ui/EditPopover'
 import { useTheme } from '@/context/ThemeContext'
 import { useAppShellContext } from '@/context/AppShellContext'
+import { useTranslation } from '@/context/LanguageContext'
 import { routes } from '@/lib/navigate'
 import { Monitor, Sun, Moon } from 'lucide-react'
 import type { DetailsPageMeta } from '@/lib/navigation-registry'
@@ -95,6 +96,7 @@ const toolIconColumns: ColumnDef<ToolIconMapping>[] = [
 export default function AppearanceSettingsPage() {
   const { mode, setMode, colorTheme, setColorTheme, font, setFont, activeWorkspaceId, setWorkspaceColorTheme } = useTheme()
   const { workspaces } = useAppShellContext()
+  const { t } = useTranslation()
 
   // Fetch workspace icons as data URLs (file:// URLs don't work in renderer)
   const workspaceIconMap = useWorkspaceIcons(workspaces)
@@ -128,6 +130,16 @@ export default function AppearanceSettingsPage() {
   const handleRichToolDescriptionsChange = useCallback(async (checked: boolean) => {
     setRichToolDescriptions(checked)
     await window.electronAPI?.setRichToolDescriptions?.(checked)
+  }, [])
+
+  // UI Language setting
+  const [uiLanguage, setUiLanguage] = useState<'en' | 'zh'>('en')
+  useEffect(() => {
+    window.electronAPI?.getUiLanguage?.().then(setUiLanguage)
+  }, [])
+  const handleUiLanguageChange = useCallback(async (lang: 'en' | 'zh') => {
+    setUiLanguage(lang)
+    await window.electronAPI?.setUiLanguage?.(lang)
   }, [])
 
   // Load preset themes on mount
@@ -225,7 +237,7 @@ export default function AppearanceSettingsPage() {
   return (
     <div className="h-full flex flex-col">
       <PanelHeader
-        title="Appearance"
+        title={t('settings.appearance.title')}
         actions={<HeaderMenu route={routes.view.settings('appearance')} helpFeature="themes" />}
       />
       <div className="flex-1 min-h-0 mask-fade-y">
@@ -234,9 +246,9 @@ export default function AppearanceSettingsPage() {
             <div className="space-y-8">
 
               {/* Default Theme */}
-              <SettingsSection title="Default Theme">
+              <SettingsSection title={t('settings.appearance.defaultTheme')}>
                 <SettingsCard>
-                  <SettingsRow label="Mode">
+                  <SettingsRow label={t('settings.appearance.mode')}>
                     <SettingsSegmentedControl
                       value={mode}
                       onValueChange={setMode}
@@ -247,14 +259,14 @@ export default function AppearanceSettingsPage() {
                       ]}
                     />
                   </SettingsRow>
-                  <SettingsRow label="Color theme">
+                  <SettingsRow label={t('settings.appearance.colorTheme')}>
                     <SettingsMenuSelect
                       value={colorTheme}
                       onValueChange={setColorTheme}
                       options={themeOptions}
                     />
                   </SettingsRow>
-                  <SettingsRow label="Font">
+                  <SettingsRow label={t('settings.appearance.font')}>
                     <SettingsSegmentedControl
                       value={font}
                       onValueChange={setFont}
@@ -270,8 +282,8 @@ export default function AppearanceSettingsPage() {
               {/* Workspace Themes */}
               {workspaces.length > 0 && (
                 <SettingsSection
-                  title="Workspace Themes"
-                  description="Override theme settings per workspace"
+                  title={t('settings.appearance.workspaceThemes')}
+                  description={t('settings.appearance.workspaceThemesDesc')}
                 >
                   <SettingsCard>
                     {workspaces.map((workspace) => {
@@ -316,17 +328,27 @@ export default function AppearanceSettingsPage() {
               )}
 
               {/* Interface */}
-              <SettingsSection title="Interface">
+              <SettingsSection title={t('settings.appearance.interface')}>
                 <SettingsCard>
+                  <SettingsRow label={t('settings.appearance.language')}>
+                    <SettingsSegmentedControl
+                      value={uiLanguage}
+                      onValueChange={handleUiLanguageChange as (v: string) => void}
+                      options={[
+                        { value: 'en', label: 'English' },
+                        { value: 'zh', label: '中文' },
+                      ]}
+                    />
+                  </SettingsRow>
                   <SettingsToggle
-                    label="Connection icons"
-                    description="Show provider icons in the session list and model selector"
+                    label={t('settings.appearance.connectionIcons')}
+                    description={t('settings.appearance.connectionIconsDesc')}
                     checked={showConnectionIcons}
                     onCheckedChange={handleConnectionIconsChange}
                   />
                   <SettingsToggle
-                    label="Rich tool descriptions"
-                    description="Add action names and intent descriptions to all tool calls. Provides richer activity context in sessions."
+                    label={t('settings.appearance.richToolDesc')}
+                    description={t('settings.appearance.richToolDescDesc')}
                     checked={richToolDescriptions}
                     onCheckedChange={handleRichToolDescriptionsChange}
                   />
@@ -335,8 +357,8 @@ export default function AppearanceSettingsPage() {
 
               {/* Tool Icons — shows the command → icon mapping used in turn cards */}
               <SettingsSection
-                title="Tool Icons"
-                description="Icons shown next to CLI commands in chat activity. Stored in ~/.craft-agent/tool-icons/."
+                title={t('settings.appearance.toolIcons')}
+                description={t('settings.appearance.toolIconsDesc')}
                 action={
                   toolIconsJsonPath ? (
                     <EditPopover

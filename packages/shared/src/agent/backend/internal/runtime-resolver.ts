@@ -144,6 +144,7 @@ function resolveRipgrepPath(hostRuntime: BackendHostRuntimeContext): string | un
 
 export function resolveBackendRuntimePaths(hostRuntime: BackendHostRuntimeContext): ResolvedBackendRuntimePaths {
   const bundledRuntimePath = hostRuntime.nodeRuntimePath || resolveBundledRuntimePath(hostRuntime);
+  const bunFallback = process.platform === 'win32' ? 'bun.exe' : 'bun';
 
   return {
     claudeCliPath: resolveClaudeCliPath(hostRuntime),
@@ -153,7 +154,7 @@ export function resolveBackendRuntimePaths(hostRuntime: BackendHostRuntimeContex
     sessionServerPath: resolveServerPath(hostRuntime, 'session-mcp-server'),
     bridgeServerPath: resolveServerPath(hostRuntime, 'bridge-mcp-server'),
     piServerPath: resolveServerPath(hostRuntime, 'pi-agent-server'),
-    nodeRuntimePath: hostRuntime.nodeRuntimePath || bundledRuntimePath || 'bun',
+    nodeRuntimePath: process.env.CRAFT_BUN_PATH || hostRuntime.nodeRuntimePath || bundledRuntimePath || bunFallback,
     bundledRuntimePath,
   };
 }

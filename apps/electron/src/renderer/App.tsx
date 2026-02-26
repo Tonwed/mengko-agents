@@ -55,6 +55,7 @@ import {
 import { useLinkInterceptor, type FilePreviewState } from '@/hooks/useLinkInterceptor'
 import { getFileManagerName } from '@/lib/platform'
 import { ActionRegistryProvider } from '@/actions'
+import { LanguageProvider } from '@/context/LanguageContext'
 
 type AppState = 'loading' | 'onboarding' | 'reauth' | 'ready'
 
@@ -1372,7 +1373,7 @@ export default function App() {
     onReadFileBinary: (path: string) => window.electronAPI.readFileBinary(path),
     // Reveal a file in the system file manager (Finder on macOS, Explorer on Windows, etc.)
     onRevealInFinder: (path: string) => {
-      window.electronAPI.showInFolder(path).catch(() => {})
+      window.electronAPI.showInFolder(path).catch(() => { })
     },
     // Platform-specific file manager name for UI labels
     fileManagerName: getFileManagerName(),
@@ -1441,63 +1442,65 @@ export default function App() {
 
   // Ready state - main app with splash overlay during data loading
   return (
-    <PlatformProvider actions={platformActions}>
-    <ShikiThemeProvider shikiTheme={shikiTheme}>
-      <ActionRegistryProvider>
-      <FocusProvider>
-        <ModalProvider>
-        <TooltipProvider delayDuration={0}>
-        <NavigationProvider
-          workspaceId={windowWorkspaceId}
-          onCreateSession={handleCreateSession}
-          onInputChange={handleInputChange}
-          isReady={appState === 'ready'}
-        >
-          {/* Handle window close requests (X button, Cmd+W) - close modal first if open */}
-          <WindowCloseHandler />
+    <LanguageProvider>
+      <PlatformProvider actions={platformActions}>
+        <ShikiThemeProvider shikiTheme={shikiTheme}>
+          <ActionRegistryProvider>
+            <FocusProvider>
+              <ModalProvider>
+                <TooltipProvider delayDuration={0}>
+                  <NavigationProvider
+                    workspaceId={windowWorkspaceId}
+                    onCreateSession={handleCreateSession}
+                    onInputChange={handleInputChange}
+                    isReady={appState === 'ready'}
+                  >
+                    {/* Handle window close requests (X button, Cmd+W) - close modal first if open */}
+                    <WindowCloseHandler />
 
-          {/* Splash screen overlay - fades out when fully ready */}
-          {showSplash && (
-            <SplashScreen
-              isExiting={splashExiting}
-              onExitComplete={handleSplashExitComplete}
-            />
-          )}
+                    {/* Splash screen overlay - fades out when fully ready */}
+                    {showSplash && (
+                      <SplashScreen
+                        isExiting={splashExiting}
+                        onExitComplete={handleSplashExitComplete}
+                      />
+                    )}
 
-          {/* Main UI - always rendered, splash fades away to reveal it */}
-          <div className="h-full flex flex-col text-foreground">
-            <div className="flex-1 min-h-0">
-              <AppShell
-                contextValue={appShellContextValue}
-                defaultLayout={[20, 32, 48]}
-                menuNewChatTrigger={menuNewChatTrigger}
-                isFocusedMode={isFocusedMode}
-              />
-            </div>
-            <ResetConfirmationDialog
-              open={showResetDialog}
-              onConfirm={executeReset}
-              onCancel={() => setShowResetDialog(false)}
-            />
-          </div>
+                    {/* Main UI - always rendered, splash fades away to reveal it */}
+                    <div className="h-full flex flex-col text-foreground">
+                      <div className="flex-1 min-h-0">
+                        <AppShell
+                          contextValue={appShellContextValue}
+                          defaultLayout={[20, 32, 48]}
+                          menuNewChatTrigger={menuNewChatTrigger}
+                          isFocusedMode={isFocusedMode}
+                        />
+                      </div>
+                      <ResetConfirmationDialog
+                        open={showResetDialog}
+                        onConfirm={executeReset}
+                        onCancel={() => setShowResetDialog(false)}
+                      />
+                    </div>
 
-          {/* File preview overlay — rendered by the link interceptor when a previewable file is clicked */}
-          {linkInterceptor.previewState && (
-            <FilePreviewRenderer
-              state={linkInterceptor.previewState}
-              onClose={linkInterceptor.closePreview}
-              loadDataUrl={linkInterceptor.readFileDataUrl}
-              loadPdfData={linkInterceptor.readFileBinary}
-              isDark={isDark}
-            />
-          )}
-        </NavigationProvider>
-        </TooltipProvider>
-        </ModalProvider>
-      </FocusProvider>
-      </ActionRegistryProvider>
-    </ShikiThemeProvider>
-    </PlatformProvider>
+                    {/* File preview overlay — rendered by the link interceptor when a previewable file is clicked */}
+                    {linkInterceptor.previewState && (
+                      <FilePreviewRenderer
+                        state={linkInterceptor.previewState}
+                        onClose={linkInterceptor.closePreview}
+                        loadDataUrl={linkInterceptor.readFileDataUrl}
+                        loadPdfData={linkInterceptor.readFileBinary}
+                        isDark={isDark}
+                      />
+                    )}
+                  </NavigationProvider>
+                </TooltipProvider>
+              </ModalProvider>
+            </FocusProvider>
+          </ActionRegistryProvider>
+        </ShikiThemeProvider>
+      </PlatformProvider>
+    </LanguageProvider>
   )
 }
 

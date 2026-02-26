@@ -67,6 +67,8 @@ export interface StoredConfig {
   richToolDescriptions?: boolean;  // Add intent/action metadata to all tool calls (default: true)
   // Windows: path to Git Bash (bash.exe) for the SDK subprocess
   gitBashPath?: string;
+  // UI Language
+  uiLanguage?: 'en' | 'zh';
 }
 
 const CONFIG_FILE = join(CONFIG_DIR, 'config.json');
@@ -336,6 +338,28 @@ export function setRichToolDescriptions(enabled: boolean): void {
   const config = loadStoredConfig();
   if (!config) return;
   config.richToolDescriptions = enabled;
+  saveConfig(config);
+}
+
+/**
+ * Get UI language preference.
+ * Defaults to 'en' if not set.
+ */
+export function getUiLanguage(): 'en' | 'zh' {
+  const config = loadStoredConfig();
+  if (config?.uiLanguage !== undefined) {
+    return config.uiLanguage;
+  }
+  return 'en';
+}
+
+/**
+ * Set UI language preference.
+ */
+export function setUiLanguage(lang: 'en' | 'zh'): void {
+  const config = loadStoredConfig();
+  if (!config) return;
+  config.uiLanguage = lang;
   saveConfig(config);
 }
 
@@ -1292,8 +1316,11 @@ function backfillAllConnectionModels(config: StoredConfig): boolean {
   for (const connection of config.llmConnections) {
     // Migrate pi-codex connections from 'openai' to 'openai-codex' provider.
     // 'openai-codex' uses the ChatGPT Plus backend (chatgpt.com/backend-api),
-    // while 'openai' is for regular API key auth (api.openai.com).
-    if (isPiProvider(connection.providerType) && connection.piAuthProvider === 'openai') {
+    // while 'openai' is for regular OpenAI API key auth (api.openai.com) or
+    // OpenAI-compatible custom endpoints (e.g. Dashscope, local models).
+    // Only migrate if there is no custom baseUrl — connections with a baseUrl
+    // are OpenAI-compat endpoints that correctly use piAuthProvider='openai'.
+    if (isPiProvider(connection.providerType) && connection.piAuthProvider === 'openai' && !connection.baseUrl) {
       connection.piAuthProvider = 'openai-codex';
       changed = true;
     }

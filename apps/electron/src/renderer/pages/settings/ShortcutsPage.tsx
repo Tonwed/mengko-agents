@@ -5,6 +5,7 @@
  */
 
 import * as React from 'react'
+import { useTranslation } from '@/context/LanguageContext'
 import { PanelHeader } from '@/components/app-shell/PanelHeader'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { SettingsSection, SettingsCard, SettingsRow } from '@/components/settings'
@@ -27,32 +28,8 @@ interface ShortcutSection {
   shortcuts: ShortcutItem[]
 }
 
-// Component-specific shortcuts that aren't in the centralized registry
-const componentSpecificSections: ShortcutSection[] = [
-  {
-    title: 'List Navigation',
-    shortcuts: [
-      { keys: ['↑', '↓'], description: 'Navigate items in list' },
-      { keys: ['Home'], description: 'Go to first item' },
-      { keys: ['End'], description: 'Go to last item' },
-    ],
-  },
-  {
-    title: 'Session List',
-    shortcuts: [
-      { keys: ['Enter'], description: 'Focus chat input' },
-      { keys: ['Right-click'], description: 'Open context menu' },
-    ],
-  },
-  {
-    title: 'Chat Input',
-    shortcuts: [
-      { keys: ['Enter'], description: 'Send message' },
-      { keys: ['Shift', 'Enter'], description: 'New line' },
-      { keys: ['Esc'], description: 'Close dialog / blur input' },
-    ],
-  },
-]
+
+
 
 function Kbd({ children }: { children: React.ReactNode }) {
   return (
@@ -89,9 +66,38 @@ function ActionShortcutRow({ actionId }: { actionId: ActionId }) {
 }
 
 export default function ShortcutsPage() {
+  const { t } = useTranslation()
+
+  // Component-specific shortcuts that aren't in the centralized registry
+  const componentSpecificSections: ShortcutSection[] = [
+    {
+      title: t('settings.shortcuts.listNavigation'),
+      shortcuts: [
+        { keys: ['↑', '↓'], description: t('settings.shortcuts.navigateItems') },
+        { keys: ['Home'], description: t('settings.shortcuts.goToFirst') },
+        { keys: ['End'], description: t('settings.shortcuts.goToLast') },
+      ],
+    },
+    {
+      title: t('settings.shortcuts.sessionList'),
+      shortcuts: [
+        { keys: ['Enter'], description: t('settings.shortcuts.focusChatInput') },
+        { keys: ['Right-click'], description: t('settings.shortcuts.openContextMenu') },
+      ],
+    },
+    {
+      title: t('settings.shortcuts.chatInput'),
+      shortcuts: [
+        { keys: ['Enter'], description: t('settings.shortcuts.sendMessage') },
+        { keys: ['Shift', 'Enter'], description: t('settings.shortcuts.newLine') },
+        { keys: ['Esc'], description: t('settings.shortcuts.closeBlur') },
+      ],
+    },
+  ]
+
   return (
     <div className="h-full flex flex-col">
-      <PanelHeader title="Shortcuts" />
+      <PanelHeader title={t('settings.shortcuts.title')} />
       <div className="flex-1 min-h-0 mask-fade-y">
         <ScrollArea className="h-full">
           <div className="px-5 py-7 max-w-3xl mx-auto space-y-8">

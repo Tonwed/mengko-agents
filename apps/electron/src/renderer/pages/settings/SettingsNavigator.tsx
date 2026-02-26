@@ -7,7 +7,8 @@
  * Styling follows SessionList/SourcesListPanel patterns for visual consistency.
  */
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
+import { useTranslation } from '@/context/LanguageContext'
 import { MoreHorizontal, AppWindow } from 'lucide-react'
 import {
   DropdownMenu,
@@ -40,15 +41,29 @@ interface SettingsItem {
   label: string
   icon: React.ComponentType<{ className?: string }>
   description: string
+  openInNewWindowLabel?: string
 }
 
 // Derive settings items from shared schema, using shared custom SVG icons
-const settingsItems: SettingsItem[] = SETTINGS_ITEMS.map((item) => ({
+const baseSettingsItems = SETTINGS_ITEMS.map((item) => ({
   id: item.id,
   label: item.label,
   icon: SETTINGS_ICONS[item.id],
   description: item.description,
 }))
+
+// Translation key mapping for settings nav items
+const NAV_TRANSLATIONS: Record<string, { label: string; desc: string }> = {
+  app: { label: 'settings.nav.app', desc: 'settings.nav.appDesc' },
+  ai: { label: 'settings.nav.ai', desc: 'settings.nav.aiDesc' },
+  appearance: { label: 'settings.nav.appearance', desc: 'settings.nav.appearanceDesc' },
+  input: { label: 'settings.nav.input', desc: 'settings.nav.inputDesc' },
+  workspace: { label: 'settings.nav.workspace', desc: 'settings.nav.workspaceDesc' },
+  permissions: { label: 'settings.nav.permissions', desc: 'settings.nav.permissionsDesc' },
+  labels: { label: 'settings.nav.labels', desc: 'settings.nav.labelsDesc' },
+  shortcuts: { label: 'settings.nav.shortcuts', desc: 'settings.nav.shortcutsDesc' },
+  preferences: { label: 'settings.nav.preferences', desc: 'settings.nav.preferencesDesc' },
+}
 
 interface SettingsItemRowProps {
   item: SettingsItem
@@ -137,7 +152,7 @@ function SettingsItemRow({ item, isSelected, isFirst, onSelect }: SettingsItemRo
                 <DropdownMenuProvider>
                   <StyledDropdownMenuItem onClick={handleOpenInNewWindow}>
                     <AppWindow className="h-3.5 w-3.5" />
-                    <span className="flex-1">Open in New Window</span>
+                    <span className="flex-1">{item.openInNewWindowLabel || 'Open in New Window'}</span>
                   </StyledDropdownMenuItem>
                 </DropdownMenuProvider>
               </StyledDropdownMenuContent>
@@ -153,6 +168,21 @@ export default function SettingsNavigator({
   selectedSubpage,
   onSelectSubpage,
 }: SettingsNavigatorProps) {
+  const { t } = useTranslation()
+
+  // Create translated settings items
+  const settingsItems = useMemo(() =>
+    baseSettingsItems.map(item => {
+      const trans = NAV_TRANSLATIONS[item.id]
+      return {
+        ...item,
+        label: trans ? t(trans.label) : item.label,
+        description: trans ? t(trans.desc) : item.description,
+        openInNewWindowLabel: t('settings.nav.openInNewWindow'),
+      }
+    }), [t]
+  )
+
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-y-auto">

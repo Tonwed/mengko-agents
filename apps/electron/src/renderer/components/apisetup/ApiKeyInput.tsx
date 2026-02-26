@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/styled-dropdown"
 import { cn } from "@/lib/utils"
 import { Check, ChevronDown, Eye, EyeOff, Loader2 } from "lucide-react"
+import { useTranslation } from "@/context/LanguageContext"
 
 export type ApiKeyStatus = 'idle' | 'validating' | 'success' | 'error'
 
@@ -162,6 +163,7 @@ export function ApiKeyInput({
   // Get presets based on provider type
   const presets = getPresetsForProvider(providerType)
   const defaultPreset = presets[0]
+  const { t } = useTranslation()
 
   // Compute initial preset: explicit (Pi piAuthProvider), derived from URL, or default
   const initialPreset = initialValues?.activePreset
@@ -196,9 +198,9 @@ export function ApiKeyInput({
   const activePresetObj = presets.find(p => p.key === activePreset)
   const apiKeyPlaceholder = activePresetObj?.placeholder
     ?? (providerType === 'google' ? 'AIza...'
-    : providerType === 'pi' ? 'pi-...'
-    : providerType === 'openai' ? 'sk-...'
-    : 'Paste your key here...')
+      : providerType === 'pi' ? 'pi-...'
+        : providerType === 'openai' ? 'sk-...'
+          : 'Paste your key here...')
 
   // Fetch Pi SDK models when a provider is selected in pi_api_key flow.
   // Returns all models sorted by cost (expensive-first) for the searchable tier dropdowns.
@@ -271,7 +273,7 @@ export function ApiKeyInput({
     // Pi API key flow with tier dropdowns — submit selected models
     if (hasPiModels) {
       if (!bestModel || !defaultModel || !cheapModel) {
-        setModelError('Please select a model for each tier.')
+        setModelError(t('apiKeyInput.selectModelForEachTier'))
         return
       }
       // Deduplicate while preserving order
@@ -297,7 +299,7 @@ export function ApiKeyInput({
     const isUsingDefaultEndpoint = isDefaultProviderPreset || !effectiveBaseUrl
     const requiresModel = !isDefaultProviderPreset && !!effectiveBaseUrl
     if (requiresModel && parsedModels.length === 0) {
-      setModelError('Default model is required for custom endpoints.')
+      setModelError(t('apiKeyInput.defaultModelRequired'))
       return
     }
 
@@ -311,9 +313,9 @@ export function ApiKeyInput({
   }
 
   const tierConfigs = [
-    { label: 'Best', desc: 'most capable', value: bestModel, onChange: setBestModel },
-    { label: 'Balanced', desc: 'good for everyday use', value: defaultModel, onChange: setDefaultModel },
-    { label: 'Fast', desc: 'summarization & utility', value: cheapModel, onChange: setCheapModel },
+    { label: t('apiKeyInput.tierBest'), desc: t('apiKeyInput.tierBestDesc'), value: bestModel, onChange: setBestModel },
+    { label: t('apiKeyInput.tierBalanced'), desc: t('apiKeyInput.tierBalancedDesc'), value: defaultModel, onChange: setDefaultModel },
+    { label: t('apiKeyInput.tierFast'), desc: t('apiKeyInput.tierFastDesc'), value: cheapModel, onChange: setCheapModel },
   ]
   const activeTierConfig = openTier ? tierConfigs.find(t => t.label === openTier) : null
 
@@ -321,7 +323,7 @@ export function ApiKeyInput({
     <form id={formId} onSubmit={handleSubmit} className="space-y-6">
       {/* API Key */}
       <div className="space-y-2">
-        <Label htmlFor="api-key">API Key</Label>
+        <Label htmlFor="api-key">{t('apiKeyInput.apiKey')}</Label>
         <div className={cn(
           "relative rounded-md shadow-minimal transition-colors",
           "bg-foreground-2 focus-within:bg-background"
@@ -356,49 +358,49 @@ export function ApiKeyInput({
 
       {/* Endpoint/Provider Preset Selector - hidden when only one preset (e.g. Codex/OpenAI direct) */}
       {presets.length > 1 && (
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <Label htmlFor="base-url">Endpoint</Label>
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              disabled={isDisabled}
-              className="flex h-6 items-center gap-1 rounded-[6px] bg-background shadow-minimal pl-2.5 pr-2 text-[12px] font-medium text-foreground/50 hover:bg-foreground/5 hover:text-foreground focus:outline-none"
-            >
-              {presets.find(p => p.key === activePreset)?.label}
-              <ChevronDown className="size-2.5 opacity-50" />
-            </DropdownMenuTrigger>
-            <StyledDropdownMenuContent align="end" className="z-floating-menu">
-              {presets.map((preset) => (
-                <StyledDropdownMenuItem
-                  key={preset.key}
-                  onClick={() => handlePresetSelect(preset)}
-                  className="justify-between"
-                >
-                  {preset.label}
-                  <Check className={cn("size-3", activePreset === preset.key ? "opacity-100" : "opacity-0")} />
-                </StyledDropdownMenuItem>
-              ))}
-            </StyledDropdownMenuContent>
-          </DropdownMenu>
-        </div>
-        {/* Base URL input - hidden for default provider presets (Anthropic/OpenAI) */}
-        {!isDefaultProviderPreset && (
-          <div className={cn(
-            "rounded-md shadow-minimal transition-colors",
-            "bg-foreground-2 focus-within:bg-background"
-          )}>
-            <Input
-              id="base-url"
-              type="text"
-              value={baseUrl}
-              onChange={(e) => handleBaseUrlChange(e.target.value)}
-              placeholder="https://your-api-endpoint.com"
-              className="border-0 bg-transparent shadow-none"
-              disabled={isDisabled}
-            />
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <Label htmlFor="base-url">{t('apiKeyInput.endpoint')}</Label>
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                disabled={isDisabled}
+                className="flex h-6 items-center gap-1 rounded-[6px] bg-background shadow-minimal pl-2.5 pr-2 text-[12px] font-medium text-foreground/50 hover:bg-foreground/5 hover:text-foreground focus:outline-none"
+              >
+                {presets.find(p => p.key === activePreset)?.label}
+                <ChevronDown className="size-2.5 opacity-50" />
+              </DropdownMenuTrigger>
+              <StyledDropdownMenuContent align="end" className="z-floating-menu">
+                {presets.map((preset) => (
+                  <StyledDropdownMenuItem
+                    key={preset.key}
+                    onClick={() => handlePresetSelect(preset)}
+                    className="justify-between"
+                  >
+                    {preset.label}
+                    <Check className={cn("size-3", activePreset === preset.key ? "opacity-100" : "opacity-0")} />
+                  </StyledDropdownMenuItem>
+                ))}
+              </StyledDropdownMenuContent>
+            </DropdownMenu>
           </div>
-        )}
-      </div>
+          {/* Base URL input - hidden for default provider presets (Anthropic/OpenAI) */}
+          {!isDefaultProviderPreset && (
+            <div className={cn(
+              "rounded-md shadow-minimal transition-colors",
+              "bg-foreground-2 focus-within:bg-background"
+            )}>
+              <Input
+                id="base-url"
+                type="text"
+                value={baseUrl}
+                onChange={(e) => handleBaseUrlChange(e.target.value)}
+                placeholder="https://your-api-endpoint.com"
+                className="border-0 bg-transparent shadow-none"
+                disabled={isDisabled}
+              />
+            </div>
+          )}
+        </div>
       )}
 
       {/* Model Selection — 3 tier dropdowns for Pi providers, text input for custom/compat */}
@@ -407,7 +409,7 @@ export function ApiKeyInput({
           {piModelsLoading ? (
             <div className="flex items-center gap-2 py-3 text-muted-foreground">
               <Loader2 className="size-3.5 animate-spin" />
-              <span className="text-xs">Loading models...</span>
+              <span className="text-xs">{t('apiKeyInput.loadingModels')}</span>
             </div>
           ) : (
             <>
@@ -440,7 +442,7 @@ export function ApiKeyInput({
                     )}
                   >
                     <span className="truncate text-foreground">
-                      {piModels.find(m => m.id === value)?.name ?? 'Select model...'}
+                      {piModels.find(m => m.id === value)?.name ?? t('apiKeyInput.selectModel')}
                     </span>
                     <ChevronDown className="size-3 opacity-50 shrink-0" />
                   </button>
@@ -469,7 +471,7 @@ export function ApiKeyInput({
                           ref={tierFilterInputRef}
                           value={tierFilter}
                           onValueChange={setTierFilter}
-                          placeholder="Search models..."
+                          placeholder={t('apiKeyInput.searchModels')}
                           autoFocus
                           className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground placeholder:select-none"
                         />
@@ -514,9 +516,9 @@ export function ApiKeyInput({
       ) : !isDefaultProviderPreset && (
         <div className="space-y-2">
           <Label htmlFor="connection-default-model" className="text-muted-foreground font-normal">
-            Default Model{' '}
+            {t('apiKeyInput.defaultModel')}{' '}
             <span className="text-foreground/30">
-              · {baseUrl.trim() ? 'required' : 'optional'}
+              · {baseUrl.trim() ? t('apiKeyInput.required') : t('apiKeyInput.optional')}
             </span>
           </Label>
           <div className={cn(
@@ -541,11 +543,11 @@ export function ApiKeyInput({
             <p className="text-xs text-destructive">{modelError}</p>
           )}
           <p className="text-xs text-foreground/30">
-            Comma-separated list. The first model is the default. The last is used for summarization.
+            {t('apiKeyInput.modelListHint')}
           </p>
           {(activePreset === 'custom' || !activePreset) && (
             <p className="text-xs text-foreground/30">
-              Required for custom endpoints. Use the provider-specific model ID.
+              {t('apiKeyInput.customEndpointHint')}
             </p>
           )}
         </div>

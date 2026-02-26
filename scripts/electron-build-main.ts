@@ -214,6 +214,18 @@ async function buildPiAgentServer(): Promise<void> {
     mkdirSync(distDir, { recursive: true });
   }
 
+  // Check if dist file already exists and is valid
+  if (existsSync(PI_AGENT_SERVER_OUTPUT)) {
+    const stats = statSync(PI_AGENT_SERVER_OUTPUT);
+    if (stats.size > 0) {
+      const verification = await verifyJsFile(PI_AGENT_SERVER_OUTPUT);
+      if (verification.valid) {
+        console.log("✅ Pi agent server already built (skipping rebuild)");
+        return;
+      }
+    }
+  }
+
   // Use --target=bun --format=esm because the Pi SDK (@mariozechner/pi-coding-agent)
   // is ESM-only. --target=node --format=cjs leaves ESM deps as external require()
   // calls that fail at runtime since there are no node_modules relative to dist/.

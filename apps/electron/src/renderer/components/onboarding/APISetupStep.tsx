@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils"
 import { Check, CreditCard, Key, Cpu } from "lucide-react"
 import { StepFormLayout, BackButton, ContinueButton } from "./primitives"
 import type { LlmAuthType, LlmProviderType } from "@craft-agent/shared/config/llm-connections"
+import { useTranslation } from "@/context/LanguageContext"
 
 /** Provider segment for the segmented control */
 export type ProviderSegment = 'anthropic' | 'pi'
@@ -17,11 +18,6 @@ const BetaBadge = () => (
     Beta
   </span>
 )
-
-const SEGMENT_DESCRIPTIONS: Record<ProviderSegment, React.ReactNode> = {
-  anthropic: <>Use Claude Agent SDK as the main agent.<br />Configure with your Claude subscription or API key.</>,
-  pi: <>Use Craft Agents Backend as the main agent.<BetaBadge /><br />Configure with your API key, OAuth subscription, or custom endpoint.</>,
-}
 
 /**
  * API setup method for onboarding.
@@ -68,44 +64,6 @@ interface ApiSetupOption {
   icon: React.ReactNode
   providerType: LlmProviderType
 }
-
-const API_SETUP_OPTIONS: ApiSetupOption[] = [
-  {
-    id: 'claude_oauth',
-    name: 'Claude Pro/Max',
-    description: 'Use your Claude subscription for unlimited access.',
-    icon: <CreditCard className="size-4" />,
-    providerType: 'anthropic',
-  },
-  {
-    id: 'anthropic_api_key',
-    name: 'Anthropic API Key',
-    description: 'Pay-as-you-go via Anthropic, OpenRouter, or compatible APIs.',
-    icon: <Key className="size-4" />,
-    providerType: 'anthropic',
-  },
-  {
-    id: 'pi_chatgpt_oauth',
-    name: 'ChatGPT Plus',
-    description: 'Use your ChatGPT subscription with Craft Agents Backend.',
-    icon: <Cpu className="size-4" />,
-    providerType: 'pi',
-  },
-  {
-    id: 'pi_copilot_oauth',
-    name: 'GitHub Copilot',
-    description: 'Use your GitHub Copilot subscription with Craft Agents Backend.',
-    icon: <Cpu className="size-4" />,
-    providerType: 'pi',
-  },
-  {
-    id: 'pi_api_key',
-    name: 'API Key',
-    description: 'Use your API key from Anthropic, OpenAI, Google, and more.',
-    icon: <Key className="size-4" />,
-    providerType: 'pi',
-  },
-]
 
 interface APISetupStepProps {
   selectedMethod: ApiSetupMethod | null
@@ -209,11 +167,6 @@ function ProviderSegmentedControl({
 
 /**
  * APISetupStep - Choose how to connect your AI agents
- *
- * Features a segmented control to filter by provider:
- * - Anthropic - Claude Pro/Max or API Key
- * - OpenAI - ChatGPT Plus/Pro or API Key
- * - GitHub Copilot - Copilot subscription
  */
 export function APISetupStep({
   selectedMethod,
@@ -222,26 +175,68 @@ export function APISetupStep({
   onBack,
   initialSegment = 'anthropic',
 }: APISetupStepProps) {
+  const { t } = useTranslation()
   const [activeSegment, setActiveSegment] = useState<ProviderSegment>(initialSegment)
+
+  const API_SETUP_OPTIONS: ApiSetupOption[] = [
+    {
+      id: 'claude_oauth',
+      name: t('onboarding.apiSetup.claudeProMax.name'),
+      description: t('onboarding.apiSetup.claudeProMax.description'),
+      icon: <CreditCard className="size-4" />,
+      providerType: 'anthropic',
+    },
+    {
+      id: 'anthropic_api_key',
+      name: t('onboarding.apiSetup.anthropicApiKey.name'),
+      description: t('onboarding.apiSetup.anthropicApiKey.description'),
+      icon: <Key className="size-4" />,
+      providerType: 'anthropic',
+    },
+    {
+      id: 'pi_chatgpt_oauth',
+      name: t('onboarding.apiSetup.chatGptPlus.name'),
+      description: t('onboarding.apiSetup.chatGptPlus.description'),
+      icon: <Cpu className="size-4" />,
+      providerType: 'pi',
+    },
+    {
+      id: 'pi_copilot_oauth',
+      name: t('onboarding.apiSetup.gitHubCopilot.name'),
+      description: t('onboarding.apiSetup.gitHubCopilot.description'),
+      icon: <Cpu className="size-4" />,
+      providerType: 'pi',
+    },
+    {
+      id: 'pi_api_key',
+      name: t('onboarding.apiSetup.piApiKey.name'),
+      description: t('onboarding.apiSetup.piApiKey.description'),
+      icon: <Key className="size-4" />,
+      providerType: 'pi',
+    },
+  ]
+
+  const SEGMENT_DESCRIPTIONS: Record<ProviderSegment, React.ReactNode> = {
+    anthropic: <>{t('onboarding.apiSetup.claudeProMax.description')}<br />Craft Agents Backend <BetaBadge />.</>,
+    pi: <>{t('onboarding.apiSetup.piApiKey.description')}</>,
+  }
 
   // Filter options based on active segment
   const filteredOptions = API_SETUP_OPTIONS.filter(o => o.providerType === activeSegment)
 
-  // Handle segment change - clear selection if it doesn't belong to new segment
+  // Handle segment change
   const handleSegmentChange = (segment: ProviderSegment) => {
     setActiveSegment(segment)
-    // If current selection doesn't match the new segment, don't auto-clear
-    // (user might want to keep it and switch back)
   }
 
   return (
     <StepFormLayout
-      title="Set up your Agent"
-      description={<>Select how you'd like to power your AI agents.<br />You can add more connections later.</>}
+      title={t('onboarding.apiSetup.title')}
+      description={<>{t('onboarding.apiSetup.description')}<br />{t('onboarding.apiSetup.descriptionSub')}</>}
       actions={
         <>
-          <BackButton onClick={onBack} />
-          <ContinueButton onClick={onContinue} disabled={!selectedMethod} />
+          <BackButton onClick={onBack}>{t('onboarding.back')}</BackButton>
+          <ContinueButton onClick={onContinue} disabled={!selectedMethod}>{t('onboarding.continue')}</ContinueButton>
         </>
       }
     >

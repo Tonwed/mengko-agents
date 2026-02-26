@@ -10,6 +10,7 @@
 
 import * as React from 'react'
 import { useState, useEffect, useCallback, useRef } from 'react'
+import { useTranslation } from '@/context/LanguageContext'
 import { PanelHeader } from '@/components/app-shell/PanelHeader'
 import { HeaderMenu } from '@/components/ui/HeaderMenu'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -86,6 +87,7 @@ function serializePreferences(state: PreferencesFormState): string {
 }
 
 export default function PreferencesPage() {
+  const { t } = useTranslation()
   const [formState, setFormState] = useState<PreferencesFormState>(emptyFormState)
   const [isLoading, setIsLoading] = useState(true)
   const [preferencesPath, setPreferencesPath] = useState<string | null>(null)
@@ -190,97 +192,97 @@ export default function PreferencesPage() {
 
   return (
     <div className="h-full flex flex-col">
-      <PanelHeader title="Preferences" actions={<HeaderMenu route={routes.view.settings('preferences')} helpFeature="preferences" />} />
+      <PanelHeader title={t('settings.preferences.title')} actions={<HeaderMenu route={routes.view.settings('preferences')} helpFeature="preferences" />} />
       <div className="flex-1 min-h-0 mask-fade-y">
         <ScrollArea className="h-full">
           <div className="px-5 py-7 max-w-3xl mx-auto space-y-8">
-          {/* Basic Info */}
-          <SettingsSection
-            title="Basic Info"
-            description="Help Craft Agent personalize responses to you."
-          >
-            <SettingsCard divided>
-              <SettingsInput
-                label="Name"
-                description="How Craft Agent should address you."
-                value={formState.name}
-                onChange={(v) => updateField('name', v)}
-                placeholder="Your name"
-                inCard
-              />
-              <SettingsInput
-                label="Timezone"
-                description="Used for relative dates like 'tomorrow' or 'next week'."
-                value={formState.timezone}
-                onChange={(v) => updateField('timezone', v)}
-                placeholder="e.g., America/New_York"
-                inCard
-              />
-              <SettingsInput
-                label="Language"
-                description="Preferred language for Craft Agent's responses."
-                value={formState.language}
-                onChange={(v) => updateField('language', v)}
-                placeholder="e.g., English"
-                inCard
-              />
-            </SettingsCard>
-          </SettingsSection>
-
-          {/* Location */}
-          <SettingsSection
-            title="Location"
-            description="Enables location-aware responses like weather, local time, and regional context."
-          >
-            <SettingsCard divided>
-              <SettingsInput
-                label="City"
-                description="Your city for local information and context."
-                value={formState.city}
-                onChange={(v) => updateField('city', v)}
-                placeholder="e.g., New York"
-                inCard
-              />
-              <SettingsInput
-                label="Country"
-                description="Your country for regional formatting and context."
-                value={formState.country}
-                onChange={(v) => updateField('country', v)}
-                placeholder="e.g., USA"
-                inCard
-              />
-            </SettingsCard>
-          </SettingsSection>
-
-          {/* Notes */}
-          <SettingsSection
-            title="Notes"
-            description="Free-form context that helps Craft Agent understand your preferences."
-            action={
-              // EditPopover for AI-assisted notes editing with "Edit File" as secondary action
-              preferencesPath ? (
-                <EditPopover
-                  trigger={<EditButton />}
-                  {...getEditConfig('preferences-notes', preferencesPath)}
-                  secondaryAction={{
-                    label: 'Edit File',
-                    filePath: preferencesPath!,
-                  }}
+            {/* Basic Info */}
+            <SettingsSection
+              title={t('settings.preferences.basicInfo')}
+              description={t('settings.preferences.basicInfoDesc')}
+            >
+              <SettingsCard divided>
+                <SettingsInput
+                  label={t('settings.preferences.nameLabel')}
+                  description={t('settings.preferences.nameDesc')}
+                  value={formState.name}
+                  onChange={(v) => updateField('name', v)}
+                  placeholder={t('settings.preferences.namePlaceholder')}
+                  inCard
                 />
-              ) : null
-            }
-          >
-            <SettingsCard divided={false}>
-              <SettingsTextarea
-                value={formState.notes}
-                onChange={(v) => updateField('notes', v)}
-                placeholder="Any additional context you'd like Craft Agent to know..."
-                rows={5}
-                inCard
-              />
-            </SettingsCard>
-          </SettingsSection>
-        </div>
+                <SettingsInput
+                  label={t('settings.preferences.timezoneLabel')}
+                  description={t('settings.preferences.timezoneDesc')}
+                  value={formState.timezone}
+                  onChange={(v) => updateField('timezone', v)}
+                  placeholder={t('settings.preferences.timezonePlaceholder')}
+                  inCard
+                />
+                <SettingsInput
+                  label={t('settings.preferences.languageLabel')}
+                  description={t('settings.preferences.languageDesc')}
+                  value={formState.language}
+                  onChange={(v) => updateField('language', v)}
+                  placeholder={t('settings.preferences.languagePlaceholder')}
+                  inCard
+                />
+              </SettingsCard>
+            </SettingsSection>
+
+            {/* Location */}
+            <SettingsSection
+              title={t('settings.preferences.location')}
+              description={t('settings.preferences.locationDesc')}
+            >
+              <SettingsCard divided>
+                <SettingsInput
+                  label={t('settings.preferences.city')}
+                  description={t('settings.preferences.cityDesc')}
+                  value={formState.city}
+                  onChange={(v) => updateField('city', v)}
+                  placeholder={t('settings.preferences.cityPlaceholder')}
+                  inCard
+                />
+                <SettingsInput
+                  label={t('settings.preferences.country')}
+                  description={t('settings.preferences.countryDesc')}
+                  value={formState.country}
+                  onChange={(v) => updateField('country', v)}
+                  placeholder={t('settings.preferences.countryPlaceholder')}
+                  inCard
+                />
+              </SettingsCard>
+            </SettingsSection>
+
+            {/* Notes */}
+            <SettingsSection
+              title={t('settings.preferences.notes')}
+              description={t('settings.preferences.notesDesc')}
+              action={
+                // EditPopover for AI-assisted notes editing with "Edit File" as secondary action
+                preferencesPath ? (
+                  <EditPopover
+                    trigger={<EditButton />}
+                    {...getEditConfig('preferences-notes', preferencesPath)}
+                    secondaryAction={{
+                      label: 'Edit File',
+                      filePath: preferencesPath!,
+                    }}
+                  />
+                ) : null
+              }
+            >
+              <SettingsCard divided={false}>
+                <SettingsTextarea
+                  value={formState.notes}
+                  onChange={(v) => updateField('notes', v)}
+                  placeholder={t('settings.preferences.notesPlaceholder')}
+                  rows={5}
+                  inCard
+                />
+              </SettingsCard>
+            </SettingsSection>
+          </div>
         </ScrollArea>
       </div>
     </div>

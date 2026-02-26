@@ -250,13 +250,65 @@ export class PiAgent extends BaseAgent {
     if (interceptorPath) {
       args.unshift('--require', interceptorPath);
     }
+    // Retrieve auth credentials early to inject into environment before spawn
+    const piAuth = await this.getPiAuth();
+    const legacyApiKey = await this.getApiKey();
 
-    // Spawn the subprocess
+    // Determine custom Base URL for the injected environment
+    const slug = this.config.connectionSlug;
+    const connection = slug ? (await import('../config/storage.ts')).getLlmConnection(slug) : null;
+    const baseUrl = this.config.envOverrides?.baseUrl || connection?.baseUrl || '';
+
+    // Spawn the subprocess using the resolved nodePath (which must be bun, since the
+    // pi-agent-server uses Bun-specific polyfills like __require)
     const child = spawn(nodePath, args, {
       cwd,
       stdio: ['pipe', 'pipe', 'pipe'],
       env: {
         ...process.env,
+        // INJECT UNIVERSAL API KEYS AND BASE URLS
+        // This is necessary because pi-coding-agent internally routes based on model ID,
+        // and expects provider-specific logic/env-variables for authentication.
+        ...(legacyApiKey ? {
+          ANTHROPIC_API_KEY: legacyApiKey,
+          OPENAI_API_KEY: legacyApiKey,
+          PI_API_KEY: legacyApiKey,
+          AMAZON_BEDROCK_API_KEY: legacyApiKey,
+          OPENCODE_API_KEY: legacyApiKey,
+          DEEPSEEK_API_KEY: legacyApiKey,
+          GOOGLE_API_KEY: legacyApiKey,
+          GEMINI_API_KEY: legacyApiKey,
+          MISTRAL_API_KEY: legacyApiKey,
+          COHERE_API_KEY: legacyApiKey,
+          TOGETHER_API_KEY: legacyApiKey,
+          XAI_API_KEY: legacyApiKey,
+          GROQ_API_KEY: legacyApiKey,
+          ZAI_API_KEY: legacyApiKey,
+          KIMI_API_KEY: legacyApiKey,
+          MINIMAX_API_KEY: legacyApiKey,
+          MINIMAX_CN_API_KEY: legacyApiKey,
+          HF_TOKEN: legacyApiKey,
+        } : {}),
+        ...(baseUrl ? {
+          ANTHROPIC_BASE_URL: baseUrl,
+          OPENAI_BASE_URL: baseUrl,
+          PI_BASE_URL: baseUrl,
+          OPENCODE_BASE_URL: baseUrl,
+          DEEPSEEK_BASE_URL: baseUrl,
+          GOOGLE_BASE_URL: baseUrl,
+          GEMINI_BASE_URL: baseUrl,
+          MISTRAL_BASE_URL: baseUrl,
+          COHERE_BASE_URL: baseUrl,
+          TOGETHER_BASE_URL: baseUrl,
+          XAI_BASE_URL: baseUrl,
+          GROQ_BASE_URL: baseUrl,
+          ZAI_BASE_URL: baseUrl,
+          KIMI_BASE_URL: baseUrl,
+          MINIMAX_BASE_URL: baseUrl,
+          MINIMAX_CN_BASE_URL: baseUrl,
+          HF_ENDPOINT: baseUrl,
+        } : {}),
+
         ...this.config.envOverrides,
         // Pass session dir for cross-process toolMetadataStore
         ...(sessionDir ? { CRAFT_SESSION_DIR: sessionDir } : {}),
@@ -308,9 +360,6 @@ export class PiAgent extends BaseAgent {
       }
     }
 
-    // Retrieve auth credentials for the subprocess
-    const piAuth = await this.getPiAuth();
-    const legacyApiKey = piAuth ? undefined : await this.getApiKey();
     const sessionPath = this.config.session
       ? getSessionPlansPath(this.config.workspace.rootPath, sessionId).replace(/\/plans$/, '')
       : '';
@@ -318,10 +367,37 @@ export class PiAgent extends BaseAgent {
     const workingDirectory = this.config.session?.workingDirectory || cwd;
 
     // Send init command (flat structure matching subprocess InboundMessage type)
+    // Strip provider prefix if it matches the current provider (e.g. 'openai/glm-5' -> 'glm-5').
+    // Use piAuth?.provider (which reflects any defaulted piAuthProvider) or fall back
+    // to the runtime value.
+    const piProvider = piAuth?.provider || getBackendRuntime(this.config).piAuthProvider;
+    let resolvedModel = this._model;
+    if (piProvider && resolvedModel.startsWith(`${piProvider}/`)) {
+      resolvedModel = resolvedModel.slice(piProvider.length + 1);
+    } else if (resolvedModel.startsWith('pi/')) {
+      resolvedModel = resolvedModel.slice(3);
+    }
+
+    // When a custom baseUrl is configured (e.g. Dashscope, local LLM), the Pi SDK's
+    // built-in model registry may already contain a model with the same ID but pointing
+    // to a different provider's endpoint. For example, 'glm-5' is registered under the
+    // 'zai' provider (api.z.ai). resolvePiModel() finds that entry in the global model
+    // scan before it can reach the final fallback that uses initConfig.baseUrl.
+    //
+    // To force resolvePiModel() past the global scan and into the final fallback —
+    // which correctly builds a model definition with initConfig.baseUrl — we set
+    // piAuth.provider to a Pi SDK-unknown value. The fallback then returns:
+    //   { id: model, provider: '<unknown>', api: 'openai-completions', baseUrl: initConfig.baseUrl }
+    // so the request hits our custom endpoint with Authorization: Bearer.
+    const effectivePiAuth = (piAuth && baseUrl)
+      ? { ...piAuth, provider: `custom-${this.config.connectionSlug || 'endpoint'}` }
+      : piAuth;
+
     this.send({
       type: 'init',
       apiKey: legacyApiKey || '',
-      model: this._model,
+      baseUrl,
+      model: resolvedModel,
       cwd,
       thinkingLevel: this._thinkingLevel,
       workspaceRootPath: this.config.workspace.rootPath,
@@ -333,7 +409,7 @@ export class PiAgent extends BaseAgent {
       providerType: this.config.providerType,
       authType: this.config.authType,
       workspaceId: this.config.workspace.id,
-      piAuth,
+      piAuth: effectivePiAuth,
     });
 
     // Wait for subprocess to report ready
@@ -389,14 +465,16 @@ export class PiAgent extends BaseAgent {
    * it reaches Pi, it's just an access token.
    */
   private async getPiAuth(): Promise<{ provider: string; credential: { type: 'api_key'; key: string } | { type: 'oauth'; access: string; refresh: string; expires: number } } | null> {
-    const piAuthProvider = getBackendRuntime(this.config).piAuthProvider;
-    if (!piAuthProvider) return null;
+    let piAuthProvider = getBackendRuntime(this.config).piAuthProvider;
 
     try {
       const credentialManager = getCredentialManager();
       const slug = this.config.connectionSlug || 'pi';
 
       if (this.config.authType === 'oauth') {
+        // OAuth requires an explicit piAuthProvider to select the correct Pi SDK backend.
+        if (!piAuthProvider) return null;
+
         const oauth = await credentialManager.getLlmOAuth(slug);
         if (oauth?.accessToken) {
           // Copilot: pass full OAuth credential so the Pi SDK can derive the
@@ -423,7 +501,16 @@ export class PiAgent extends BaseAgent {
           };
         }
       } else {
-        // API key-based connections
+        // API key-based connections.
+        // If no piAuthProvider is configured (e.g., manually-created compat connections
+        // like Dashscope that were not assigned a provider in the setup UI), fall back
+        // to 'openai' — virtually all OpenAI-compatible endpoints expect
+        // "Authorization: Bearer" rather than "x-api-key", so this is the safe default.
+        if (!piAuthProvider) {
+          piAuthProvider = 'openai';
+          this.debug(`No piAuthProvider configured for API key connection — defaulting to 'openai' (OpenAI-compat)`);
+        }
+
         const apiKey = await credentialManager.getLlmApiKey(slug);
         if (apiKey) {
           this.debug(`Retrieved API key credential for Pi provider: ${piAuthProvider}`);
@@ -528,10 +615,17 @@ export class PiAgent extends BaseAgent {
         return oauth.accessToken;
       }
 
-      // Try Anthropic API key
+      // Try connection-specific API key
+      const llmApiKey = await credentialManager.getLlmApiKey(slug);
+      if (llmApiKey) {
+        this.debug(`Retrieved LLM API key for ${slug}`);
+        return llmApiKey;
+      }
+
+      // Try legacy global Anthropic API key
       const apiKey = await credentialManager.getApiKey();
       if (apiKey) {
-        this.debug('Retrieved Anthropic API key');
+        this.debug('Retrieved legacy global API key');
         return apiKey;
       }
 
