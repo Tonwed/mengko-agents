@@ -49,7 +49,7 @@ extraMetadata:
 publish:
   provider: github
   owner: Tonwed
-  repo: craft-agents-oss
+  repo: mengko-agents
 
 # Disable ASAR to avoid decompression overhead and click delays
 asar: false
