@@ -15,8 +15,11 @@ if (existsSync(rendererDir)) {
   rmSync(rendererDir, { recursive: true, force: true });
 }
 
+// Use process.execPath to get the current bun executable
+const bunPath = process.execPath;
+
 const proc = spawn({
-  cmd: ["bun", "run", "vite", "build", "--config", "apps/electron/vite.config.ts"],
+  cmd: [bunPath, "run", "vite", "build", "--config", "apps/electron/vite.config.ts"],
   cwd: ROOT_DIR,
   stdout: "inherit",
   stderr: "inherit",
