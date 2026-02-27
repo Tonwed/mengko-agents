@@ -26,12 +26,6 @@ files:
   # Exclude everything from node_modules (will use extraResources for SDK)
   - "!node_modules/**/*"
 
-# SDK is included as per-platform extraResources (below) to bypass node_modules auto-exclusion
-# and to apply platform-specific ripgrep binary filtering.
-# Since electron-builder v20.15.2, directories named "node_modules" are automatically excluded.
-# Using extraResources with explicit from/to paths works around this limitation.
-# See: https://github.com/electron-userland/electron-builder/issues/3104
-
 extraMetadata:
   main: dist/main.cjs
 
@@ -64,14 +58,6 @@ mac:
   gatekeeperAssess: false
   entitlements: build/entitlements.mac.plist
   entitlementsInherit: build/entitlements.mac.plist
-  extraResources:
-    - from: ../../node_modules/@anthropic-ai/claude-agent-sdk
-      to: app/node_modules/@anthropic-ai/claude-agent-sdk
-      filter:
-        - "**/*"
-        - "!vendor/ripgrep/arm64-linux/**"
-        - "!vendor/ripgrep/x64-linux/**"
-        - "!vendor/ripgrep/x64-win32/**"
   # Use predictable naming for macOS packages (applies to zip; dmg uses its own config below)
   artifactName: "Mengko-Agent-${arch}.${ext}"
   # Code signing & notarization (disabled by default for local builds)
@@ -107,15 +93,6 @@ win:
         - x64
   # Use predictable naming: Mengko-Agent-x64.exe
   artifactName: "Mengko-Agent-${arch}.${ext}"
-  extraResources:
-    - from: ../../node_modules/@anthropic-ai/claude-agent-sdk
-      to: app/node_modules/@anthropic-ai/claude-agent-sdk
-      filter:
-        - "**/*"
-        - "!vendor/ripgrep/arm64-darwin/**"
-        - "!vendor/ripgrep/x64-darwin/**"
-        - "!vendor/ripgrep/arm64-linux/**"
-        - "!vendor/ripgrep/x64-linux/**"
 
 nsis:
   oneClick: true
@@ -133,11 +110,3 @@ linux:
       arch:
         - x64
   artifactName: "Mengko-Agent-${arch}.${ext}"
-  extraResources:
-    - from: ../../node_modules/@anthropic-ai/claude-agent-sdk
-      to: app/node_modules/@anthropic-ai/claude-agent-sdk
-      filter:
-        - "**/*"
-        - "!vendor/ripgrep/arm64-darwin/**"
-        - "!vendor/ripgrep/x64-darwin/**"
-        - "!vendor/ripgrep/x64-win32/**"
