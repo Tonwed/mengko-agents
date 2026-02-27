@@ -1,15 +1,15 @@
 {
-  "name": "@craft-agent/electron",
+  "name": "mengko-agents",
   "version": "1.0.6",
-  "description": "Electron desktop app for Craft Agents",
+  "description": "Electron desktop app for Mengko Agents",
   "main": "dist/main.cjs",
   "private": true,
   "author": {
-    "name": "Craft Docs Ltd.",
-    "email": "support@craft.do"
+    "name": "Mengko",
+    "email": "support@mengko.ai"
   },
-  "homepage": "https://agents.craft.do",
-  "license": "MIT",
+  "homepage": "https://github.com/Tonwed/mengko-agents",
+  "license": "Apache-2.0",
   "type": "module",
   "engines": {
     "node": ">=18.0.0"
