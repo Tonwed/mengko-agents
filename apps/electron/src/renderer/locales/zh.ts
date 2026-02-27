@@ -330,6 +330,17 @@ export const zh: Translations = {
         validating: '验证中...',
         checking: '检查中...',
         waitingForAuth: '等待授权...',
+        // 偏好设置步骤
+        preferences: {
+            title: '欢迎使用 Mengko Agents',
+            description: '选择您喜欢的主题和语言以开始使用。',
+            theme: '主题',
+            light: '浅色',
+            dark: '深色',
+            system: '跟随系统',
+            language: '语言',
+            continue: '继续',
+        },
         // 欢迎步骤
         welcome: {
             title: '欢迎使用 Mengko Agents',

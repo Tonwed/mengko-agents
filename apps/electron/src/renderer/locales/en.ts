@@ -328,6 +328,17 @@ export const en = {
         validating: 'Validating...',
         checking: 'Checking...',
         waitingForAuth: 'Waiting for authorization...',
+        // Preferences step
+        preferences: {
+            title: 'Welcome to Mengko Agents',
+            description: 'Choose your preferred theme and language to get started.',
+            theme: 'Theme',
+            light: 'Light',
+            dark: 'Dark',
+            system: 'System',
+            language: 'Language',
+            continue: 'Continue',
+        },
         // Welcome step
         welcome: {
             title: 'Welcome to Mengko Agents',

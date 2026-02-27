@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils"
 import { X } from "lucide-react"
+import { PreferencesStep } from "./PreferencesStep"
 import { WelcomeStep } from "./WelcomeStep"
 import type { ApiSetupMethod } from "./APISetupStep"
 import { ProviderSelectStep, type ProviderChoice } from "./ProviderSelectStep"
@@ -10,6 +11,7 @@ import { GitBashWarning, type GitBashStatus } from "./GitBashWarning"
 import type { ApiKeySubmitData } from "../apisetup"
 
 export type OnboardingStep =
+  | 'preferences'
   | 'welcome'
   | 'git-bash'
   | 'provider-select'
@@ -118,6 +120,13 @@ export function OnboardingWizard({
 }: OnboardingWizardProps) {
   const renderStep = () => {
     switch (state.step) {
+      case 'preferences':
+        return (
+          <PreferencesStep
+            onContinue={onContinue}
+          />
+        )
+
       case 'welcome':
         return (
           <WelcomeStep

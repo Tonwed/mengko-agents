@@ -3,11 +3,12 @@
  *
  * Manages the state machine for the onboarding wizard.
  * Flow:
- * 1. Welcome
- * 2. Git Bash (Windows only, if not found)
- * 3. API Setup (API Key / Claude OAuth)
- * 4. Credentials (API Key or Claude OAuth)
- * 5. Complete
+ * 1. Preferences (theme + language)
+ * 2. Welcome
+ * 3. Git Bash (Windows only, if not found)
+ * 4. API Setup (API Key / Claude OAuth)
+ * 5. Credentials (API Key or Claude OAuth)
+ * 6. Complete
  */
 import { useState, useCallback, useEffect } from 'react'
 import type {
@@ -162,7 +163,7 @@ export function apiSetupMethodToConnectionSetup(
 export function useOnboarding({
   onComplete,
   initialSetupNeeds,
-  initialStep = 'provider-select',
+  initialStep = 'preferences',
   initialApiSetupMethod,
   onDismiss,
   onConfigSaved,
@@ -253,6 +254,10 @@ export function useOnboarding({
   // Continue to next step
   const handleContinue = useCallback(async () => {
     switch (state.step) {
+      case 'preferences':
+        setState(s => ({ ...s, step: 'welcome' }))
+        break
+
       case 'provider-select':
         // Handled by handleSelectProvider (card click navigates directly)
         break
