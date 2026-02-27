@@ -29,6 +29,20 @@ files:
 extraMetadata:
   main: dist/main.cjs
 
+# Extra resources: bundled runtime, SDK, and interceptor
+# These are copied to process.resourcesPath at install time
+extraResources:
+  # Bun runtime for Claude SDK subprocess
+  - from: vendor/bun
+    to: vendor/bun
+    filter:
+      - "**/*"
+  # Claude Agent SDK
+  - from: node_modules/@anthropic-ai
+    to: node_modules/@anthropic-ai
+    filter:
+      - "**/*"
+
 # Auto-update: publish to GitHub Releases
 publish:
   provider: github

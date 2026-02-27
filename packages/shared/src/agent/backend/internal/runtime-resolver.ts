@@ -57,10 +57,15 @@ function resolveBundledRuntimePath(hostRuntime: BackendHostRuntimeContext): stri
 
 function resolveClaudeCliPath(hostRuntime: BackendHostRuntimeContext): string | undefined {
   const sdkRelative = join('node_modules', '@anthropic-ai', 'claude-agent-sdk', 'cli.js');
-  return firstExistingPath([
+  const candidates = [
     join(hostRuntime.appRootPath, sdkRelative),
     join(hostRuntime.appRootPath, '..', '..', sdkRelative),
-  ]);
+  ];
+  // For packaged apps, also check resourcesPath (where extraResources are placed)
+  if (hostRuntime.isPackaged && hostRuntime.resourcesPath) {
+    candidates.unshift(join(hostRuntime.resourcesPath, sdkRelative));
+  }
+  return firstExistingPath(candidates);
 }
 
 function resolveClaudeInterceptorPath(hostRuntime: BackendHostRuntimeContext): string | undefined {
@@ -139,6 +144,11 @@ function resolveRipgrepPath(hostRuntime: BackendHostRuntimeContext): string | un
   );
 
   if (hostRuntime.isPackaged) {
+    // Check resourcesPath first (where extraResources are placed)
+    if (hostRuntime.resourcesPath) {
+      const fromResources = join(hostRuntime.resourcesPath, ripgrepRelative);
+      if (existsSync(fromResources)) return fromResources;
+    }
     const packaged = join(hostRuntime.appRootPath, ripgrepRelative);
     if (existsSync(packaged)) return packaged;
   }
