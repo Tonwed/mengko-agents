@@ -3,14 +3,15 @@
  * Version management script for Mengko Agents
  *
  * Usage:
- *   bun run scripts/version.ts patch   # 1.0.0 -> 1.0.1
- *   bun run scripts/version.ts minor   # 1.0.0 -> 1.1.0
- *   bun run scripts/version.ts major   # 1.0.0 -> 2.0.0
- *   bun run scripts/version.ts 1.2.3   # Set specific version
+ *   bun run version patch   # 1.0.0 -> 1.0.1
+ *   bun run version minor   # 1.0.0 -> 1.1.0
+ *   bun run version major   # 1.0.0 -> 2.0.0
+ *   bun run version 1.2.3   # Set specific version
  */
 
-import { readFileSync, writeFileSync } from "fs";
+import { readFileSync, writeFileSync, existsSync } from "fs";
 import { join } from "path";
+import { $ } from "bun";
 
 const ROOT_DIR = join(import.meta.dir, "..");
 
@@ -134,7 +135,30 @@ createReleaseNotes(newVersion);
 console.log("");
 console.log(`✅ Version updated to ${newVersion}`);
 console.log("");
-console.log("Next steps:");
-console.log("1. Edit the release notes: apps/electron/resources/release-notes/v${newVersion}.md");
-console.log("2. Commit the changes: git add -A && git commit -m 'chore: Bump version to ${newVersion}'");
-console.log("3. Create and push tag: git tag v${newVersion} && git push origin main --tags");
+
+// Auto commit, tag and push
+console.log("📦 Committing changes...");
+try {
+  await $`git add -A`.quiet();
+  await $`git commit -m ${`chore: Bump version to ${newVersion}`}`.quiet();
+  console.log("✓ Changes committed");
+
+  console.log("🏷️  Creating tag...");
+  await $`git tag v${newVersion}`.quiet();
+  console.log(`✓ Tag v${newVersion} created`);
+
+  console.log("🚀 Pushing to GitHub...");
+  await $`git push origin main`.quiet();
+  await $`git push origin v${newVersion}`.quiet();
+  console.log("✓ Pushed to GitHub");
+
+  console.log("");
+  console.log("🎉 Release v${newVersion} triggered!");
+  console.log("   Check progress: https://github.com/Tonwed/mengko-agents/actions");
+} catch (err) {
+  console.log("");
+  console.log("⚠️  Git operations failed. Manual steps:");
+  console.log("1. git add -A && git commit -m 'chore: Bump version to ${newVersion}'");
+  console.log("2. git tag v${newVersion}");
+  console.log("3. git push origin main --tags");
+}
