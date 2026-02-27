@@ -97,7 +97,10 @@ function getFetchFn(): typeof fetch {
 }
 
 /**
- * Internal helper to probe an LLM endpoint with a lightweight HTTP request.
+ * Internal helper to probe an LLM endpoint with a lightweight API call.
+ * Uses a minimal messages request instead of /v1/models because many
+ * third-party endpoints (especially Cloudflare-protected ones) block
+ * the /v1/models endpoint with WAF challenges.
  */
 async function probeConnection(args: {
   apiKey: string;
@@ -107,32 +110,52 @@ async function probeConnection(args: {
   const { apiKey, baseUrl, timeoutMs } = args;
   const effectiveBase = (baseUrl ?? '').trim() || 'https://api.pi-ai.workers.dev';
   const cleanBase = effectiveBase.replace(/\/+$/, '');
-  const probeUrl = cleanBase.endsWith('/v1') ? `${cleanBase}/models` : `${cleanBase}/v1/models`;
+
+  // Use /v1/messages endpoint with a minimal test request
+  const probeUrl = cleanBase.endsWith('/v1') ? `${cleanBase}/messages` : `${cleanBase}/v1/messages`;
 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   const fetchFn = getFetchFn();
 
   try {
+    // Send a minimal messages request to test auth
     const resp = await fetchFn(probeUrl, {
-      method: 'GET',
+      method: 'POST',
       headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'x-api-key': apiKey, // For Anthropic-compatible endpoints
         'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
       },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1,
+        messages: [{ role: 'user', content: 'Hi' }],
+      }),
       signal: controller.signal,
     });
 
     clearTimeout(timer);
 
-    // 401/403 -> auth failure (bad API key)
-    if (resp.status === 401 || resp.status === 403) {
+    // 401/403 with auth error -> bad API key
+    if (resp.status === 401) {
       return { success: false, error: '无效的 API 密钥或未授权。请检查您的 API 密钥。' };
     }
 
-    // 2xx, 4xx (except 401/403), 5xx -> endpoint is reachable and key was accepted
-    // (404 just means /v1/models path doesn't exist, key is still likely valid)
+    // 403 could be Cloudflare challenge OR auth error - check response body
+    if (resp.status === 403) {
+      const body = await resp.text();
+      // Cloudflare challenge pages contain HTML
+      if (body.includes('Just a moment') || body.includes('challenge-platform') || body.includes('cf-')) {
+        // Cloudflare challenge - endpoint is reachable, try to proceed
+        return { success: true };
+      }
+      return { success: false, error: '无效的 API 密钥或未授权。请检查您的 API 密钥。' };
+    }
+
+    // 2xx, 4xx (except 401/403), 5xx -> endpoint is reachable
+    // 404 means wrong endpoint path, but server responded
+    // 400/422 means request format issue, but auth worked
     return { success: true };
   } catch (err) {
     clearTimeout(timer);
