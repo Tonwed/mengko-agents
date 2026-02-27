@@ -2,14 +2,17 @@ import log from 'electron-log/main'
 import { app } from 'electron'
 
 /**
- * Debug mode is enabled when running from source (not packaged) or with --debug flag.
- * - true: `bun run electron:start` or `electron .` or packaged app with `--debug`
- * - false: bundled .app/.exe release without --debug flag
+ * Debug mode is enabled when running from source (not packaged) or with --app-debug flag.
+ * - true: `bun run electron:start` or `electron .` or packaged app with `--app-debug`
+ * - false: bundled .app/.exe release without --app-debug flag
+ *
+ * Note: We use --app-debug instead of --debug because --debug is deprecated in Electron
+ * and triggers a deprecation warning.
  *
  * Note: We guard against app being undefined for build verification (node --check)
  * which runs outside of Electron context.
  */
-export const isDebugMode = !app?.isPackaged || process.argv.includes('--debug')
+export const isDebugMode = !app?.isPackaged || process.argv.includes('--app-debug')
 
 // Configure transports based on debug mode
 if (isDebugMode) {
