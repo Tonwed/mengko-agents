@@ -153,12 +153,12 @@ try {
   console.log("✓ Pushed to GitHub");
 
   console.log("");
-  console.log("🎉 Release v${newVersion} triggered!");
+  console.log(`🎉 Release v${newVersion} triggered!`);
   console.log("   Check progress: https://github.com/Tonwed/mengko-agents/actions");
 } catch (err) {
   console.log("");
   console.log("⚠️  Git operations failed. Manual steps:");
-  console.log("1. git add -A && git commit -m 'chore: Bump version to ${newVersion}'");
-  console.log("2. git tag v${newVersion}");
+  console.log(`1. git add -A && git commit -m 'chore: Bump version to ${newVersion}'`);
+  console.log(`2. git tag v${newVersion}`);
   console.log("3. git push origin main --tags");
 }

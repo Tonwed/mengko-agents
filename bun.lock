@@ -86,8 +86,8 @@
       },
     },
     "apps/electron": {
-      "name": "@craft-agent/electron",
-      "version": "1.0.0",
+      "name": "mengko-agents",
+      "version": "1.0.7",
       "dependencies": {
         "@craft-agent/core": "workspace:*",
         "@craft-agent/shared": "workspace:*",
@@ -152,7 +152,7 @@
     },
     "packages/core": {
       "name": "@craft-agent/core",
-      "version": "1.0.0",
+      "version": "1.0.7",
       "devDependencies": {
         "@types/uuid": "^11.0.0",
       },
@@ -163,7 +163,7 @@
     },
     "packages/mermaid": {
       "name": "@craft-agent/mermaid",
-      "version": "1.0.0",
+      "version": "1.0.7",
       "dependencies": {
         "elkjs": "^0.11.0",
         "entities": "^7.0.1",
@@ -174,12 +174,12 @@
     },
     "packages/pi-agent-server": {
       "name": "@craft-agent/pi-agent-server",
-      "version": "1.0.0",
+      "version": "1.0.7",
       "bin": "dist/index.js",
     },
     "packages/session-mcp-server": {
       "name": "@craft-agent/session-mcp-server",
-      "version": "1.0.0",
+      "version": "1.0.7",
       "bin": {
         "session-mcp-server": "./dist/index.js",
       },
@@ -194,7 +194,7 @@
     },
     "packages/session-tools-core": {
       "name": "@craft-agent/session-tools-core",
-      "version": "1.0.0",
+      "version": "1.0.7",
       "dependencies": {
         "@craft-agent/mermaid": "workspace:*",
         "gray-matter": "^4.0.3",
@@ -207,7 +207,7 @@
     },
     "packages/shared": {
       "name": "@craft-agent/shared",
-      "version": "1.0.0",
+      "version": "1.0.7",
       "dependencies": {
         "@craft-agent/core": "workspace:*",
         "@craft-agent/session-tools-core": "workspace:*",
@@ -231,7 +231,7 @@
     },
     "packages/ui": {
       "name": "@craft-agent/ui",
-      "version": "1.0.0",
+      "version": "1.0.7",
       "dependencies": {
         "@craft-agent/core": "workspace:*",
         "@craft-agent/mermaid": "workspace:*",
@@ -446,8 +446,6 @@
     "@borewit/text-codec": ["@borewit/text-codec@0.2.1", "https://registry.npmmirror.com/@borewit/text-codec/-/text-codec-0.2.1.tgz", {}, "sha512-k7vvKPbf7J2fZ5klGRD9AeKfUvojuZIQ3BT5u7Jfv+puwXkUBUT5PVyMDfJZpy30CBDXGMgw7fguK/lpOMBvgw=="],
 
     "@craft-agent/core": ["@craft-agent/core@workspace:packages/core"],
-
-    "@craft-agent/electron": ["@craft-agent/electron@workspace:apps/electron"],
 
     "@craft-agent/mermaid": ["@craft-agent/mermaid@workspace:packages/mermaid"],
 
@@ -2318,6 +2316,8 @@
     "mdast-util-to-string": ["mdast-util-to-string@4.0.0", "https://registry.npmmirror.com/mdast-util-to-string/-/mdast-util-to-string-4.0.0.tgz", { "dependencies": { "@types/mdast": "^4.0.0" } }, "sha512-0H44vDimn51F0YwvxSJSm0eCDOJTRlmN0R1yBh4HLj9wiV1Dn0QoXGbvFAWj2hSItVTlCmBF1hqKlIyUBVFLPg=="],
 
     "media-typer": ["media-typer@1.1.0", "https://registry.npmmirror.com/media-typer/-/media-typer-1.1.0.tgz", {}, "sha512-aisnrDP4GNe06UcKFnV5bfMNPBUw4jsLGaWwWfnH3v02GnBuXX2MCVn5RbrWo0j3pczUilYblq7fQ7Nw2t5XKw=="],
+
+    "mengko-agents": ["mengko-agents@workspace:apps/electron"],
 
     "merge-descriptors": ["merge-descriptors@2.0.0", "https://registry.npmmirror.com/merge-descriptors/-/merge-descriptors-2.0.0.tgz", {}, "sha512-Snk314V5ayFLhp3fkUREub6WtjBfPdCPY1Ln8/8munuLuiYhsABgBVWsozAG+MWMbVEvcdcpbi9R7ww22l9Q3g=="],
 
