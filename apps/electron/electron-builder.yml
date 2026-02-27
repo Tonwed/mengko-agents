@@ -102,6 +102,10 @@ nsis:
   # Bun subprocess cannot read/write files in Program Files due to Windows permissions.
   perMachine: false
   deleteAppDataOnUninstall: true
+  # Set the installation directory name explicitly
+  installerIcon: resources/icon.ico
+  uninstallerIcon: resources/icon.ico
+  installerHeaderIcon: resources/icon.ico
 
 linux:
   icon: resources/icon.png

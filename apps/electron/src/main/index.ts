@@ -512,6 +512,10 @@ process.on('uncaughtException', (error) => {
 })
 
 process.on('unhandledRejection', (reason, promise) => {
-  mainLog.error('Unhandled rejection at:', promise, 'reason:', reason)
+  // Log detailed error information
+  const errorDetails = reason instanceof Error
+    ? { message: reason.message, stack: reason.stack, name: reason.name }
+    : { value: String(reason), type: typeof reason }
+  mainLog.error('Unhandled rejection at:', promise, 'reason:', errorDetails)
   Sentry.captureException(reason instanceof Error ? reason : new Error(String(reason)))
 })
