@@ -10,6 +10,7 @@
     "!apps/online-docs"
   ],
   "scripts": {
+    "version": "bun run scripts/version.ts",
     "test": "bun test",
     "typecheck": "cd packages/shared && bun run tsc --noEmit",
     "typecheck:all": "cd packages/core && bun run tsc --noEmit && cd ../shared && bun run tsc --noEmit",
