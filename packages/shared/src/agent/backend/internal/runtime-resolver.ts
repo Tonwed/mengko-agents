@@ -64,6 +64,11 @@ function resolveClaudeCliPath(hostRuntime: BackendHostRuntimeContext): string | 
 }
 
 function resolveClaudeInterceptorPath(hostRuntime: BackendHostRuntimeContext): string | undefined {
+  // For packaged apps, first try the bundled CJS interceptor
+  const bundlePath = join(hostRuntime.appRootPath, 'dist', 'interceptor.cjs');
+  if (existsSync(bundlePath)) return bundlePath;
+
+  // Fall back to TypeScript source (for development)
   const interceptorRelative = join('packages', 'shared', 'src', 'unified-network-interceptor.ts');
   return firstExistingPath([
     join(hostRuntime.appRootPath, interceptorRelative),
@@ -76,6 +81,11 @@ function resolveInterceptorBundlePath(hostRuntime: BackendHostRuntimeContext): s
     return hostRuntime.interceptorBundlePath;
   }
 
+  // For packaged apps, look for dist/interceptor.cjs relative to app root
+  const directPath = join(hostRuntime.appRootPath, 'dist', 'interceptor.cjs');
+  if (existsSync(directPath)) return directPath;
+
+  // Try walking up the directory tree
   return resolveUpwards(hostRuntime.appRootPath, join('dist', 'interceptor.cjs'))
     ?? resolveUpwards(hostRuntime.appRootPath, join('apps', 'electron', 'dist', 'interceptor.cjs'));
 }
