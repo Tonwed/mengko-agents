@@ -1,6 +1,6 @@
 {
   "name": "mengko-agents",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "An open-source desktop AI agent with multi-provider support",
   "type": "module",
   "private": true,
