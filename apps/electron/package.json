@@ -1,6 +1,6 @@
 {
   "name": "mengko-agents",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "Electron desktop app for Mengko Agents",
   "main": "dist/main.cjs",
   "private": true,

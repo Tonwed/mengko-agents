@@ -5,7 +5,7 @@
  * app bundle. The Assets.car file is compiled locally using actool with the
  * macOS 26 SDK (not available in CI), then committed to the repo.
  *
- * Also copies the Claude Agent SDK from monorepo root to the app bundle.
+ * Also copies the Claude Agent SDK and Bun runtime from monorepo root to the app bundle.
  *
  * To regenerate Assets.car after icon changes:
  *   cd apps/electron
@@ -19,6 +19,8 @@
 
 const path = require('path');
 const fs = require('fs');
+const https = require('https');
+const http = require('http');
 
 function copyDirSync(src, dest, filter) {
   if (!fs.existsSync(src)) return;
@@ -45,8 +47,134 @@ function copyDirSync(src, dest, filter) {
   }
 }
 
+function downloadFile(url, dest) {
+  return new Promise((resolve, reject) => {
+    const protocol = url.startsWith('https') ? https : http;
+    const file = fs.createWriteStream(dest);
+
+    const request = (url) => {
+      protocol.get(url, (response) => {
+        if (response.statusCode === 302 || response.statusCode === 301) {
+          // Follow redirect
+          request(response.headers.location);
+          return;
+        }
+
+        if (response.statusCode !== 200) {
+          reject(new Error(`Failed to download: ${response.statusCode}`));
+          return;
+        }
+
+        response.pipe(file);
+        file.on('finish', () => {
+          file.close();
+          resolve();
+        });
+      }).on('error', (err) => {
+        fs.unlink(dest, () => {});
+        reject(err);
+      });
+    };
+
+    request(url);
+  });
+}
+
+async function findSystemBun() {
+  const { execSync } = require('child_process');
+  try {
+    // Try to find bun in PATH
+    const whichCmd = process.platform === 'win32' ? 'where bun' : 'which bun';
+    const bunPath = execSync(whichCmd, { encoding: 'utf-8' }).trim().split('\n')[0];
+    if (fs.existsSync(bunPath)) {
+      return bunPath;
+    }
+  } catch (e) {
+    // bun not found in PATH
+  }
+
+  // Check common locations
+  const commonPaths = [
+    // Windows
+    path.join(process.env.USERPROFILE || '', '.bun', 'bin', 'bun.exe'),
+    path.join(process.env.USERPROFILE || '', '.bun', 'bun.exe'),
+    // Unix
+    path.join(process.env.HOME || '', '.bun', 'bin', 'bun'),
+    '/usr/local/bin/bun',
+    '/usr/bin/bun',
+  ];
+
+  for (const p of commonPaths) {
+    if (fs.existsSync(p)) {
+      return p;
+    }
+  }
+
+  return null;
+}
+
+async function downloadBunRuntime(platform, destDir) {
+  const bunVersion = 'bun-v1.3.5';
+  let downloadUrl;
+  let extractedDir;
+  let binaryName;
+
+  if (platform === 'darwin') {
+    // Use arm64 for macOS (most common on Apple Silicon)
+    downloadUrl = `https://github.com/oven-sh/bun/releases/download/${bunVersion}/bun-darwin-aarch64.zip`;
+    extractedDir = 'bun-darwin-aarch64';
+    binaryName = 'bun';
+  } else if (platform === 'win32') {
+    downloadUrl = `https://github.com/oven-sh/bun/releases/download/${bunVersion}/bun-windows-x64-baseline.zip`;
+    extractedDir = 'bun-windows-x64-baseline';
+    binaryName = 'bun.exe';
+  } else {
+    downloadUrl = `https://github.com/oven-sh/bun/releases/download/${bunVersion}/bun-linux-x64.zip`;
+    extractedDir = 'bun-linux-x64';
+    binaryName = 'bun';
+  }
+
+  const zipPath = path.join(destDir, 'bun.zip');
+  const extractPath = path.join(destDir, 'bun-extracted');
+  const destBinary = path.join(destDir, binaryName);
+
+  console.log(`Downloading Bun runtime from ${downloadUrl}...`);
+
+  // Create temp directory
+  if (!fs.existsSync(destDir)) {
+    fs.mkdirSync(destDir, { recursive: true });
+  }
+
+  // Download
+  await downloadFile(downloadUrl, zipPath);
+  console.log('Download complete');
+
+  // Extract (using unzip on Unix, PowerShell on Windows)
+  const { execSync } = require('child_process');
+  if (platform === 'win32') {
+    execSync(`powershell -Command "Expand-Archive -Path '${zipPath}' -DestinationPath '${extractPath}' -Force"`, { stdio: 'inherit' });
+  } else {
+    execSync(`unzip -o "${zipPath}" -d "${extractPath}"`, { stdio: 'inherit' });
+  }
+
+  // Copy binary
+  const srcBinary = path.join(extractPath, extractedDir, binaryName);
+  fs.copyFileSync(srcBinary, destBinary);
+
+  // Make executable on Unix
+  if (platform !== 'win32') {
+    fs.chmodSync(destBinary, 0o755);
+  }
+
+  // Cleanup
+  fs.unlinkSync(zipPath);
+  fs.rmSync(extractPath, { recursive: true, force: true });
+
+  console.log(`Bun runtime installed at ${destBinary}`);
+}
+
 module.exports = function afterPack(context) {
-  return new Promise((resolve) => {
+  return new Promise(async (resolve) => {
     try {
       const appPath = context.appOutDir;
       const platform = context.electronPlatformName;
@@ -61,8 +189,56 @@ module.exports = function afterPack(context) {
       console.log(`afterPack: appOutDir=${appPath}`);
       console.log(`afterPack: resourcesDir=${resourcesDir}`);
 
-      // === Copy Claude Agent SDK ===
+      // === Copy Bun Runtime ===
       const projectDir = context.packager.projectDir;
+      const bunSource = path.join(projectDir, 'vendor', 'bun');
+      const bunDest = path.join(resourcesDir, 'vendor', 'bun');
+      const bunBinary = platform === 'win32' ? 'bun.exe' : 'bun';
+
+      // Check if bun exists in vendor/bun (local build)
+      const localBunBinary = path.join(bunSource, bunBinary);
+      let bunCopied = false;
+
+      if (fs.existsSync(localBunBinary)) {
+        console.log(`Copying Bun runtime from ${localBunBinary}...`);
+        if (!fs.existsSync(bunDest)) {
+          fs.mkdirSync(bunDest, { recursive: true });
+        }
+        fs.copyFileSync(localBunBinary, path.join(bunDest, bunBinary));
+        console.log('Bun runtime copied successfully');
+        bunCopied = true;
+      }
+
+      // Try to use system bun (installed by CI setup-bun action)
+      if (!bunCopied) {
+        const systemBun = await findSystemBun();
+        if (systemBun) {
+          console.log(`Using system Bun runtime from ${systemBun}...`);
+          if (!fs.existsSync(bunDest)) {
+            fs.mkdirSync(bunDest, { recursive: true });
+          }
+          fs.copyFileSync(systemBun, path.join(bunDest, bunBinary));
+          // Make executable on Unix
+          if (platform !== 'win32') {
+            fs.chmodSync(path.join(bunDest, bunBinary), 0o755);
+          }
+          console.log('Bun runtime copied successfully');
+          bunCopied = true;
+        }
+      }
+
+      // Fallback to downloading
+      if (!bunCopied) {
+        console.log('Bun runtime not found locally or in system, downloading...');
+        try {
+          await downloadBunRuntime(platform, bunDest);
+        } catch (err) {
+          console.log(`Warning: Failed to download Bun runtime: ${err.message}`);
+          console.log('The app may not work correctly without the bundled runtime');
+        }
+      }
+
+      // === Copy Claude Agent SDK ===
       const workspaceRoot = path.resolve(projectDir, '..', '..');
       const sdkSource = path.join(workspaceRoot, 'node_modules', '@anthropic-ai', 'claude-agent-sdk');
       const sdkDest = path.join(resourcesDir, 'app', 'node_modules', '@anthropic-ai', 'claude-agent-sdk');
