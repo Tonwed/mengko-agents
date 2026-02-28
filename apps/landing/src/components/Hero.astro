@@ -1,51 +1,48 @@
 ---
-const heroTitle = "The AI agent workspace";
-const heroSubtitle = "with the UX it deserves";
-const heroDescription = "Connect Claude, ChatGPT, Copilot, or any LLM. Organize sessions with status workflows. Everything you need to do the work of your life.";
 const downloadUrl = "https://github.com/Tonwed/mengko-agents/releases/latest";
 const githubUrl = "https://github.com/Tonwed/mengko-agents";
 ---
 
-<section class="relative min-h-screen flex items-center justify-center overflow-hidden">
-  <!-- Background Effects -->
-  <div class="absolute inset-0 grid-bg"></div>
-  <div class="gradient-blur gradient-blur-white absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2"></div>
-  <div class="gradient-blur gradient-blur-gray absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2"></div>
+<section class="hero">
+  <!-- Background -->
+  <div class="hero__bg grid-bg"></div>
+  <div class="gradient-orb gradient-orb--white" style="top: 20%; left: 20%; transform: translate(-50%, -50%);"></div>
+  <div class="gradient-orb gradient-orb--gray" style="bottom: 20%; right: 15%; transform: translate(50%, 50%);"></div>
 
   <!-- Content -->
-  <div class="relative z-10 max-w-5xl mx-auto px-6 py-32 text-center">
+  <div class="hero__content">
     <!-- Badge -->
-    <div class="animate-fade-in mb-8">
-      <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass text-sm text-gray-300">
-        <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+    <div class="fade-up" style="margin-bottom: 2rem;">
+      <span class="badge">
+        <span class="badge__dot"></span>
         Open Source · Apache 2.0
       </span>
     </div>
 
     <!-- Headline -->
-    <h1 class="text-5xl md:text-7xl lg:text-8xl font-semibold tracking-tight mb-6 animate-fade-in-delay-1">
-      <span class="text-gradient">{heroTitle}</span>
+    <h1 class="hero__title fade-up fade-up--1">
+      <span class="text-gradient">The AI agent workspace</span>
       <br />
-      <span class="text-white">{heroSubtitle}</span>
+      <span class="hero__title-sub">with the UX it deserves</span>
     </h1>
 
     <!-- Description -->
-    <p class="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto mb-10 animate-fade-in-delay-2">
-      {heroDescription}
+    <p class="hero__desc fade-up fade-up--2">
+      Connect Claude, ChatGPT, Copilot, or any LLM. Organize sessions with status workflows. Everything you need to do the work of your life.
     </p>
 
     <!-- CTAs -->
-    <div class="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in-delay-3">
-      <a href={downloadUrl} class="btn-primary w-full sm:w-auto">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <div class="hero__ctas fade-up fade-up--3">
+      <a href={downloadUrl} class="btn btn--primary btn--full">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
           <polyline points="7 10 12 15 17 10"/>
           <line x1="12" y1="15" x2="12" y2="3"/>
         </svg>
         Download for Free
       </a>
-      <a href={githubUrl} target="_blank" rel="noopener noreferrer" class="btn-secondary w-full sm:w-auto">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+      <a href={githubUrl} target="_blank" rel="noopener noreferrer" class="btn btn--secondary btn--full">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
           <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
         </svg>
         View on GitHub
@@ -53,21 +50,21 @@ const githubUrl = "https://github.com/Tonwed/mengko-agents";
     </div>
 
     <!-- Platform badges -->
-    <div class="mt-8 flex items-center justify-center gap-6 text-sm text-gray-500">
-      <span class="flex items-center gap-2">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+    <div class="hero__platforms fade-up fade-up--4">
+      <span class="hero__platform">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
           <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
         </svg>
         macOS
       </span>
-      <span class="flex items-center gap-2">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+      <span class="hero__platform">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
           <path d="M3 5.557v12.886l8.5 5.25V.307L3 5.557zm9.5-5.25v23.386l8.5-5.25V5.557l-8.5-5.25z"/>
         </svg>
         Windows
       </span>
-      <span class="flex items-center gap-2">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+      <span class="hero__platform">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
           <path d="M12.504 0c-.155 0-.315.008-.48.021-4.226.333-3.105 4.807-3.17 6.298-.076 1.092-.3 1.953-1.05 3.02-.885 1.051-2.127 2.75-2.716 4.521-.278.832-.41 1.684-.287 2.489a.424.424 0 00-.11.135c-.26.268-.45.6-.663.839-.199.199-.485.267-.797.4-.313.136-.658.269-.864.68-.09.189-.136.394-.132.602 0 .199.027.4.055.536.058.399.116.728.04.97-.249.68-.28 1.145-.106 1.484.174.334.535.47.94.601.81.2 1.91.135 2.774.6.926.466 1.866.67 2.616.47.526-.116.97-.464 1.208-.946.587-.003 1.23-.269 2.26-.334.699-.058 1.574.267 2.577.2.025.134.063.198.114.333l.003.003c.391.778 1.113 1.132 1.884 1.071.771-.06 1.592-.536 2.257-1.306.631-.765 1.683-1.084 2.378-1.503.348-.199.629-.469.649-.853.023-.4-.2-.811-.714-1.376v-.097l-.003-.003c-.17-.2-.25-.535-.338-.926-.085-.401-.182-.786-.492-1.046h-.003c-.059-.054-.123-.067-.188-.135a.357.357 0 00-.19-.064c.431-1.278.264-2.55-.173-3.694-.533-1.41-1.465-2.638-2.175-3.483-.796-1.005-1.576-1.957-1.56-3.368.026-2.152.236-6.133-3.544-6.139z"/>
         </svg>
         Linux
@@ -76,8 +73,8 @@ const githubUrl = "https://github.com/Tonwed/mengko-agents";
   </div>
 
   <!-- Scroll indicator -->
-  <div class="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-gray-500">
+  <div class="hero__scroll">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
       <path d="M12 5v14M5 12l7 7 7-7"/>
     </svg>
   </div>

@@ -1677,8 +1677,8 @@ Model
                   </div>
                   <Check className="h-3 w-3 text-foreground shrink-0 ml-3" />
                 </StyledDropdownMenuItem>
-              ) : isEmptySession && llmConnections.length > 1 ? (
-                /* Hierarchical view: Provider → Connection → Models (for new sessions with multiple connections) */
+              ) : llmConnections.length > 1 ? (
+                /* Hierarchical view: Provider → Connection → Models (when multiple connections available) */
                 connectionsByProvider.map(([providerName, connections], index) => (
                   <React.Fragment key={providerName}>
                     {/* Provider group label */}

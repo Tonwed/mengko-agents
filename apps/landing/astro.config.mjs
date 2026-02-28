@@ -1,5 +1,5 @@
 import { defineConfig } from 'astro/config';
-import tailwindcss from '@tailwindcss/postcss';
+import tailwindcss from '@tailwindcss/vite';
 
 // https://astro.build/config
 export default defineConfig({
@@ -7,15 +7,11 @@ export default defineConfig({
   site: 'https://mengko.ai',
   // For GitHub Pages deployment from repo
   // Uncomment the line below if deploying to GitHub Pages from a repo (not custom domain)
-  // base: '/mengko-agents',
+  base: '/mengko-agents',
   build: {
     assets: 'assets',
   },
   vite: {
-    css: {
-      postcss: {
-        plugins: [tailwindcss],
-      },
-    },
+    plugins: [tailwindcss()],
   },
 });
