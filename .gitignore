@@ -62,7 +62,3 @@ id_ed25519*
 # Credentials files
 credentials.enc
 *.credentials
-
-# Bundled server files (built at build time, contain third-party code)
-apps/electron/resources/pi-agent-server/
-apps/electron/dist/resources/pi-agent-server/
