@@ -2681,7 +2681,7 @@ export class SessionManager {
 
   /**
    * Set the LLM connection for a session.
-   * Can only be changed before the first message is sent (connection is locked after).
+   * Can be changed at any time - will recreate the agent with new connection settings.
    * This determines which LLM provider/backend will be used for this session.
    */
   async setSessionConnection(sessionId: string, connectionSlug: string): Promise<void> {
@@ -2689,12 +2689,6 @@ export class SessionManager {
     if (!managed) {
       sessionLog.warn(`setSessionConnection: session ${sessionId} not found`)
       throw new Error(`Session ${sessionId} not found`)
-    }
-
-    // Only allow changing connection before first message (session hasn't started)
-    if (managed.messages && managed.messages.length > 0) {
-      sessionLog.warn(`setSessionConnection: cannot change connection after session has started (${sessionId})`)
-      throw new Error('Cannot change connection after session has started')
     }
 
     // Validate connection exists
@@ -2705,7 +2699,45 @@ export class SessionManager {
       throw new Error(`LLM connection "${connectionSlug}" not found`)
     }
 
+    // Check if connection is actually changing
+    const previousConnection = managed.llmConnection
+    if (previousConnection === connectionSlug) {
+      sessionLog.info(`setSessionConnection: connection already set to "${connectionSlug}" for session ${sessionId}`)
+      return
+    }
+
+    // Get previous connection info for logging
+    const previousConnectionObj = previousConnection ? getLlmConnection(previousConnection) : null
+    const previousProviderType = previousConnectionObj?.providerType
+    const previousBaseUrl = previousConnectionObj?.baseUrl
+    const newProviderType = connection.providerType
+    const newBaseUrl = connection.baseUrl
+
+    // Always destroy agent when connection changes, because:
+    // 1. baseUrl may be different (even for same provider type)
+    // 2. apiKey/credentials may be different
+    // 3. The agent's config.connectionSlug is set at creation time
+    if (managed.agent) {
+      sessionLog.info(`setSessionConnection: destroying agent for session ${sessionId} (connection: ${previousConnection} → ${connectionSlug}, provider: ${previousProviderType} → ${newProviderType}, baseUrl: ${previousBaseUrl} → ${newBaseUrl})`)
+      managed.agent = null
+    }
+
+    // Update the connection
     managed.llmConnection = connectionSlug
+    managed.connectionLocked = true  // Keep locked to prevent auto-resolution
+
+    // Update model to the new connection's default if current model doesn't match new connection's models
+    if (managed.model) {
+      const newConnectionModels = connection.models || []
+      const modelMatches = newConnectionModels.some(m =>
+        typeof m === 'string' ? m === managed.model : m.id === managed.model
+      )
+      if (!modelMatches && connection.defaultModel) {
+        sessionLog.info(`setSessionConnection: updating model from ${managed.model} to ${connection.defaultModel} for new connection`)
+        managed.model = connection.defaultModel
+      }
+    }
+
     // Persist in-memory state directly to avoid race with pending queue writes
     this.persistSession(managed)
     await this.flushSession(managed.id)
@@ -3291,34 +3323,52 @@ export class SessionManager {
   /**
    * Update the model for a session
    * Pass null to clear the session-specific model (will use global config)
-   * @param connection - Optional LLM connection slug (only applied if not already locked)
+   * @param connection - Optional LLM connection slug (can be changed even after session started)
    */
   async updateSessionModel(sessionId: string, workspaceId: string, model: string | null, connection?: string): Promise<void> {
     sessionLog.info(`[updateSessionModel] sessionId=${sessionId}, model=${model}, connection=${connection}`)
     const managed = this.sessions.get(sessionId)
     if (managed) {
       managed.model = model ?? undefined
-      // Also update connection if provided and not already locked
-      if (connection && !managed.connectionLocked) {
+
+      // If connection is provided and different from current, switch connection
+      if (connection && managed.llmConnection !== connection) {
+        const prevConnection = managed.llmConnection
         managed.llmConnection = connection
+
+        // Check if provider type is changing
+        const { getLlmConnection } = await import('@craft-agent/shared/config/storage')
+        const prevConnObj = prevConnection ? getLlmConnection(prevConnection) : null
+        const newConnObj = getLlmConnection(connection)
+
+        if (prevConnObj && newConnObj && prevConnObj.providerType !== newConnObj.providerType) {
+          // Provider changing - destroy agent so it will be recreated with new provider
+          if (managed.agent) {
+            sessionLog.info(`[updateSessionModel] Provider changing from ${prevConnObj.providerType} to ${newConnObj.providerType}, destroying agent`)
+            managed.agent = null
+          }
+        }
       }
-      // Persist to disk (include connection if it was updated)
+
+      // Persist to disk
       const updates: { model?: string; llmConnection?: string } = { model: model ?? undefined }
-      if (connection && !managed.connectionLocked) {
+      if (connection) {
         updates.llmConnection = connection
       }
       await updateSessionMetadata(managed.workspace.rootPath, sessionId, updates)
+
       // Update agent model if it already exists (takes effect on next query)
       if (managed.agent) {
         // Fallback chain: session model > workspace default > connection default
         const wsConfig = loadWorkspaceConfig(managed.workspace.rootPath)
         const sessionConn = resolveSessionConnection(managed.llmConnection, wsConfig?.defaults?.defaultLlmConnection)
         const effectiveModel = model ?? wsConfig?.defaults?.model ?? sessionConn?.defaultModel!
-        sessionLog.info(`[updateSessionModel] Calling agent.setModel(${effectiveModel}) [agent exists=${!!managed.agent}, connectionLocked=${managed.connectionLocked}]`)
+        sessionLog.info(`[updateSessionModel] Calling agent.setModel(${effectiveModel}) [agent exists=${!!managed.agent}]`)
         managed.agent.setModel(effectiveModel)
       } else {
         sessionLog.info(`[updateSessionModel] No agent yet, model will apply on next agent creation`)
       }
+
       // Notify renderer of the model change
       this.sendEvent({ type: 'session_model_changed', sessionId, model }, managed.workspace.id)
       sessionLog.info(`Session ${sessionId} model updated to: ${model ?? '(global config)'}`)
