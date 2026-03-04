@@ -1450,7 +1450,17 @@ export class PiAgent extends BaseAgent {
       return;
     }
 
-    // For other reasons, send abort to subprocess
+    // For UserStop and other reasons, kill the subprocess to ensure clean state
+    // The subprocess may be in an inconsistent state after abort, and we need
+    // to ensure the next chat() starts fresh
+    if (reason === AbortReason.UserStop || reason === AbortReason.Redirect) {
+      this.debug(`Force abort with reason ${reason}, killing subprocess for clean restart`);
+      this.killSubprocess();
+      this.piSessionId = null;  // Clear session ID so next turn starts fresh
+      return;
+    }
+
+    // For other reasons, send abort to subprocess (legacy behavior)
     this.send({ type: 'abort' });
   }
 

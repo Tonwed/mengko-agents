@@ -2719,6 +2719,7 @@ export class SessionManager {
     // 3. The agent's config.connectionSlug is set at creation time
     if (managed.agent) {
       sessionLog.info(`setSessionConnection: destroying agent for session ${sessionId} (connection: ${previousConnection} → ${connectionSlug}, provider: ${previousProviderType} → ${newProviderType}, baseUrl: ${previousBaseUrl} → ${newBaseUrl})`)
+      managed.agent.destroy()
       managed.agent = null
     }
 
@@ -3334,20 +3335,21 @@ export class SessionManager {
       // If connection is provided and different from current, switch connection
       if (connection && managed.llmConnection !== connection) {
         const prevConnection = managed.llmConnection
-        managed.llmConnection = connection
 
-        // Check if provider type is changing
-        const { getLlmConnection } = await import('@craft-agent/shared/config/storage')
-        const prevConnObj = prevConnection ? getLlmConnection(prevConnection) : null
-        const newConnObj = getLlmConnection(connection)
-
-        if (prevConnObj && newConnObj && prevConnObj.providerType !== newConnObj.providerType) {
-          // Provider changing - destroy agent so it will be recreated with new provider
-          if (managed.agent) {
-            sessionLog.info(`[updateSessionModel] Provider changing from ${prevConnObj.providerType} to ${newConnObj.providerType}, destroying agent`)
-            managed.agent = null
-          }
+        // Always destroy agent when connection changes, because:
+        // 1. baseUrl may be different (even for same provider type)
+        // 2. apiKey/credentials may be different
+        // 3. The agent's config.connectionSlug is set at creation time
+        if (managed.agent) {
+          const { getLlmConnection } = await import('@craft-agent/shared/config/storage')
+          const prevConnObj = prevConnection ? getLlmConnection(prevConnection) : null
+          const newConnObj = getLlmConnection(connection)
+          sessionLog.info(`[updateSessionModel] Connection changing from ${prevConnection} to ${connection}, destroying agent (prev baseUrl: ${prevConnObj?.baseUrl}, new baseUrl: ${newConnObj?.baseUrl})`)
+          managed.agent.destroy()
+          managed.agent = null
         }
+
+        managed.llmConnection = connection
       }
 
       // Persist to disk
@@ -3366,7 +3368,7 @@ export class SessionManager {
         sessionLog.info(`[updateSessionModel] Calling agent.setModel(${effectiveModel}) [agent exists=${!!managed.agent}]`)
         managed.agent.setModel(effectiveModel)
       } else {
-        sessionLog.info(`[updateSessionModel] No agent yet, model will apply on next agent creation`)
+        sessionLog.info(`[updateSessionModel] Agent was destroyed or doesn't exist, will be recreated with new connection on next message`)
       }
 
       // Notify renderer of the model change

@@ -8,6 +8,7 @@ import { APP_VERSION } from '../version/index.ts';
 import { readPluginName } from '../utils/workspace.ts';
 import { globSync } from 'glob';
 import os from 'os';
+import { AGENT_NAME, AGENT_EMAIL } from '../branding.ts';
 
 /** Maximum size of CLAUDE.md file to include (10KB) */
 const MAX_CONTEXT_FILE_SIZE = 10 * 1024;
@@ -260,7 +261,7 @@ export interface SystemPromptOptions {
 
 /**
  * System prompt preset types for different agent contexts.
- * - 'default': Full Craft Agent system prompt
+ * - 'default': Full ${AGENT_NAME} system prompt
  * - 'mini': Focused prompt for quick configuration edits
  */
 export type SystemPromptPreset = 'default' | 'mini';
@@ -276,7 +277,7 @@ export function getMiniAgentSystemPrompt(workspaceRootPath?: string): string {
     ? `\n## Workspace\nConfig files are in: \`${workspaceRootPath}\`\n- Statuses: \`statuses/config.json\`\n- Labels: \`labels/config.json\`\n- Permissions: \`permissions.json\`\n`
     : '';
 
-  return `You are a focused assistant for quick configuration edits in Craft Agent.
+  return `You are a focused assistant for quick configuration edits in ${AGENT_NAME}.
 
 ## Your Role
 You help users make targeted changes to configuration files. Be concise and efficient.
@@ -387,16 +388,16 @@ Grep pattern="." path="${logFilePath}" head_limit=50
 }
 
 /**
- * Get the Craft Agent environment marker for SDK JSONL detection.
+ * Get the ${AGENT_NAME} environment marker for SDK JSONL detection.
  * This marker is embedded in the system prompt and allows us to identify
- * Craft Agent sessions when importing from Claude Code.
+ * ${AGENT_NAME} sessions when importing from Claude Code.
  */
-function getCraftAgentEnvironmentMarker(): string {
+function getAgentEnvironmentMarker(): string {
   const platform = process.platform; // 'darwin', 'win32', 'linux'
   const arch = process.arch; // 'arm64', 'x64'
   const osVersion = os.release(); // OS kernel version
 
-  return `<craft_agent_environment version="${APP_VERSION}" platform="${platform}" arch="${arch}" os_version="${osVersion}" />`;
+  return `<agent_environment version="${APP_VERSION}" platform="${platform}" arch="${arch}" os_version="${osVersion}" />`;
 }
 
 /**
@@ -419,7 +420,7 @@ function getCraftAssistantPrompt(workspaceRootPath?: string, backendName: string
     || '{workspaceId}';
 
   // Environment marker for SDK JSONL detection
-  const environmentMarker = getCraftAgentEnvironmentMarker();
+  const environmentMarker = getAgentEnvironmentMarker();
 
   return `${environmentMarker}
 
@@ -488,7 +489,7 @@ Read relevant context files using the Read tool - they contain architecture info
 | PDF Preview | \`${DOC_REFS.pdfPreview}\` | When displaying PDF documents inline |
 | LLM Tool | \`${DOC_REFS.llmTool}\` | When using \`call_llm\` for subtasks |
 
-**IMPORTANT:** Always read the relevant doc file BEFORE making changes. Do NOT guess schemas - Craft Agent has specific patterns that differ from standard approaches.
+**IMPORTANT:** Always read the relevant doc file BEFORE making changes. Do NOT guess schemas - ${AGENT_NAME} has specific patterns that differ from standard approaches.
 
 ## User preferences
 
@@ -504,14 +505,14 @@ When you learn information about the user (their name, timezone, location, langu
 5. **Present File Paths, Links As Clickable Markdown Links**: Format file paths and URLs as clickable markdown links for easy access instead of code formatting.
 6. **Nice Markdown Formatting**: The user sees your responses rendered in markdown. Use headings, lists, bold/italic text, and code blocks for clarity. Basic HTML is also supported, but use sparingly.
 
-!!IMPORTANT!!. You must refer to yourself as Craft Agent when asked. You can acknowledge that you are powered by ${backendName}, but you must always refer to yourself as Craft Agent.
+!!IMPORTANT!!. You must refer to yourself as ${AGENT_NAME} when asked. You can acknowledge that you are powered by ${backendName}, but you must always refer to yourself as ${AGENT_NAME}.
 
 ## Git Conventions
 
-When creating git commits, include Craft Agent as a co-author:
+When creating git commits, include ${AGENT_NAME} as a co-author:
 
 \`\`\`
-Co-Authored-By: Craft Agent <agents-noreply@craft.do>
+Co-Authored-By: ${AGENT_NAME} <${AGENT_EMAIL}>
 \`\`\`
 
 ## Permission Modes
@@ -614,11 +615,11 @@ Your memory is limited as of cut-off date, so it contain wrong or stale info, or
 I.e. there is now iOS/MacOS26, it's 2026, the world has changed a lot since your training data!
 
 ## Code Diffs and Visualization
-Craft Agent renders **unified code diffs natively** as beautiful diff views. Use diffs where it makes sense to show changes. Users will love it.
+${AGENT_NAME} renders **unified code diffs natively** as beautiful diff views. Use diffs where it makes sense to show changes. Users will love it.
 
 ## Structured Data (Tables & Spreadsheets)
 
-Craft Agent renders \`datatable\` and \`spreadsheet\` code blocks natively as rich, interactive tables. Use these instead of markdown tables whenever you have structured data.
+${AGENT_NAME} renders \`datatable\` and \`spreadsheet\` code blocks natively as rich, interactive tables. Use these instead of markdown tables whenever you have structured data.
 
 ### Data Table
 Use \`datatable\` for sortable, filterable data displays. Users can click column headers to sort and type to filter.
@@ -736,7 +737,7 @@ Use the \`call_llm\` tool to invoke a secondary LLM for focused subtasks. It run
 
 ## Diagrams and Visualization
 
-Craft Agent renders **Mermaid diagrams natively** as beautiful themed SVGs. Use diagrams extensively to visualize:
+${AGENT_NAME} renders **Mermaid diagrams natively** as beautiful themed SVGs. Use diagrams extensively to visualize:
 - Architecture and module relationships
 - Data flow and state transitions
 - Database schemas and entity relationships
@@ -765,7 +766,7 @@ graph LR
 
 ## HTML Preview
 
-Craft Agent renders \`html-preview\` code blocks as live HTML previews in sandboxed iframes. Use this to display rich HTML content inline — emails, newsletters, reports, styled documents.
+${AGENT_NAME} renders \`html-preview\` code blocks as live HTML previews in sandboxed iframes. Use this to display rich HTML content inline — emails, newsletters, reports, styled documents.
 
 \`\`\`html-preview
 {
@@ -832,7 +833,7 @@ render_template({
 
 ## PDF Preview
 
-Craft Agent renders \`pdf-preview\` code blocks as inline PDF previews using react-pdf. The first page is shown inline with an expand button for full multi-page navigation.
+${AGENT_NAME} renders \`pdf-preview\` code blocks as inline PDF previews using react-pdf. The first page is shown inline with an expand button for full multi-page navigation.
 
 \`\`\`pdf-preview
 {

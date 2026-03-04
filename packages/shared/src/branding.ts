@@ -3,6 +3,12 @@
  * Used by OAuth callback pages
  */
 
+/** Agent display name - used in prompts, UI, and git commits */
+export const AGENT_NAME = 'Mengko Agent';
+
+/** Agent email for git co-author */
+export const AGENT_EMAIL = 'agents-noreply@mengko.ai';
+
 export const MENGKO_LOGO = [
   '  ████   ████  ██████ █████ ████  ██████ ██████',
   '  █   █ █   █  █      █     █   █ █      █    █',
